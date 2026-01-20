@@ -1,7 +1,7 @@
 {
-  "name": "trello-desktop-mcp",
+  "name": "trello-mcp-server",
   "version": "1.0.0",
-  "description": "Trello integration for Claude Desktop via Model Context Protocol (MCP)",
+  "description": "Trello integration for AI agents via Model Context Protocol (MCP)",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -22,16 +22,16 @@
     "productivity",
     "project-management"
   ],
-  "author": "Trello Desktop MCP Contributors",
+  "author": "Trello MCP Server Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/trello-desktop-mcp.git"
+    "url": "https://github.com/kevinhillinger/trello-mcp-server.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/trello-desktop-mcp/issues"
+    "url": "https://github.com/kevinhillinger/trello-mcp-server/issues"
   },
-  "homepage": "https://github.com/yourusername/trello-desktop-mcp#readme",
+  "homepage": "https://github.com/kevinhillinger/trello-mcp-server#readme",
   "engines": {
     "node": ">=18.0.0"
   },

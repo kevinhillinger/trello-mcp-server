@@ -75,8 +75,7 @@ src/
 └── utils/                # Shared utilities
     ├── validation.ts     # Zod schemas and validation
     ├── logger.ts         # Structured logging
-    ├── health.ts         # Health check functionality
-    └── appInsights.ts    # Telemetry and monitoring
+    └── health.ts         # Health check functionality
 ```
 
 ### Key Files and Their Responsibilities
@@ -510,35 +509,6 @@ export class TrelloClient {
       },
       `Custom operation for ${params.id}`
     );
-  }
-}
-```
-
-### Monitoring and Telemetry
-
-```typescript
-// Add telemetry to new tools
-import { logger } from '../utils/logger.js';
-import { insights } from '../utils/appInsights.js';
-
-export async function handleNewTool(args: unknown) {
-  const startTime = Date.now();
-  
-  try {
-    // Tool implementation
-    const result = await executeLogic(args);
-    
-    // Success telemetry
-    const duration = Date.now() - startTime;
-    logger.info('New tool executed successfully', { duration: `${duration}ms` });
-    insights.trackEvent('NewToolSuccess', { duration: duration.toString() });
-    
-    return result;
-  } catch (error) {
-    // Error telemetry
-    logger.error('New tool failed', { error: error.message });
-    insights.trackException(error as Error, { tool: 'new_tool' });
-    throw error;
   }
 }
 ```

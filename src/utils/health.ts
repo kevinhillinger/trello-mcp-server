@@ -1,7 +1,6 @@
 // Express is optional for health endpoints
 type Request = any;
 type Response = any;
-import { insights } from './appInsights.js';
 import { logger } from './logger.js';
 
 export interface HealthStatus {
@@ -15,14 +14,6 @@ export interface HealthStatus {
     version: string;
     platform: string;
     arch: string;
-  };
-  azure: {
-    hostname?: string;
-    instanceId?: string;
-    siteName?: string;
-    resourceGroup?: string;
-    applicationInsights: boolean;
-    customDomain: string;
   };
   services: {
     trello: {
@@ -122,14 +113,6 @@ export class HealthChecker {
         platform: process.platform,
         arch: process.arch
       },
-      azure: {
-        ...(process.env.WEBSITE_HOSTNAME && { hostname: process.env.WEBSITE_HOSTNAME }),
-        ...(process.env.WEBSITE_INSTANCE_ID && { instanceId: process.env.WEBSITE_INSTANCE_ID }),
-        ...(process.env.WEBSITE_SITE_NAME && { siteName: process.env.WEBSITE_SITE_NAME }),
-        ...(process.env.WEBSITE_RESOURCE_GROUP && { resourceGroup: process.env.WEBSITE_RESOURCE_GROUP }),
-        applicationInsights: !!process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
-        customDomain: 'trello.mcplab.tr'
-      },
       services: {
         trello: {
           status: trelloStatus,
@@ -174,19 +157,6 @@ export class HealthChecker {
         userAgent: req.get('User-Agent')
       });
 
-      // Track health check in Application Insights
-      insights.trackEvent('HealthCheck', {
-        status: healthStatus.status,
-        memoryUtilization: healthStatus.performance.memoryUtilization.toString(),
-        trelloStatus: healthStatus.services.trello.status,
-        environment: healthStatus.environment,
-        userAgent: req.get('User-Agent') || 'unknown'
-      });
-
-      insights.trackMetric('HealthCheckDuration', duration, {
-        status: healthStatus.status
-      });
-
       // Set appropriate HTTP status code
       const statusCode = healthStatus.status === 'healthy' ? 200 : 
                         healthStatus.status === 'degraded' ? 200 : 503;
@@ -201,11 +171,6 @@ export class HealthChecker {
         error: errorMessage,
         duration: `${duration}ms`,
         ip: req.ip
-      });
-
-      insights.trackException(error instanceof Error ? error : new Error(errorMessage), {
-        operation: 'HealthCheck',
-        duration: duration.toString()
       });
 
       res.status(503).json({

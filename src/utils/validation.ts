@@ -76,6 +76,124 @@ export const deleteCardSchema = z.object({
   cardId: trelloIdSchema
 });
 
+export const addAttachmentToCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  url: z.string().url('Must be a valid URL'),
+  name: z.string().max(256, 'Name too long').optional(),
+  mimeType: z.string().optional(),
+  setCover: z.boolean().optional()
+});
+
+export const deleteAttachmentFromCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  attachmentId: trelloIdSchema
+});
+
+export const createChecklistOnCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  name: z.string().min(1, 'Checklist name is required').max(16384, 'Checklist name too long').optional(),
+  idChecklistSource: trelloIdOptionalSchema,
+  pos: z.union([z.number().min(0), z.enum(['top', 'bottom'])]).optional()
+});
+
+export const updateCheckItemSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  checkItemId: trelloIdSchema,
+  name: z.string().min(1).max(16384).optional(),
+  state: z.enum(['complete', 'incomplete']).optional(),
+  pos: z.union([z.number().min(0), z.enum(['top', 'bottom'])]).optional()
+});
+
+export const deleteCheckItemSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  checkItemId: trelloIdSchema
+});
+
+export const addLabelToCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  labelId: trelloIdSchema
+});
+
+export const removeLabelFromCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  labelId: trelloIdSchema
+});
+
+export const addMemberToCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  memberId: trelloIdSchema
+});
+
+export const removeMemberFromCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  memberId: trelloIdSchema
+});
+
+export const archiveCardSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  cardId: trelloIdSchema,
+  archive: z.boolean().optional().default(true)
+});
+
+// Label validation schemas
+const labelColorSchema = z.enum(['yellow', 'purple', 'blue', 'red', 'green', 'orange', 'black', 'sky', 'pink', 'lime']).nullable();
+
+export const createLabelSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  name: z.string().min(1, 'Label name is required').max(16384, 'Label name too long'),
+  color: labelColorSchema,
+  idBoard: trelloIdSchema
+});
+
+export const getLabelSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  labelId: trelloIdSchema,
+  fields: z.string().optional()
+});
+
+export const updateLabelSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  labelId: trelloIdSchema,
+  name: z.string().min(1).max(16384).optional(),
+  color: labelColorSchema.optional()
+});
+
+export const deleteLabelSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  labelId: trelloIdSchema
+});
+
+export const updateLabelFieldSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  token: z.string().min(1, 'Token is required'),
+  labelId: trelloIdSchema,
+  field: z.enum(['name', 'color']),
+  value: z.string().min(1, 'Field value is required')
+});
+
 export function validateCredentials(data: unknown) {
   return credentialsSchema.parse(data);
 }
@@ -110,6 +228,66 @@ export function validateGetCard(data: unknown) {
 
 export function validateDeleteCard(data: unknown) {
   return deleteCardSchema.parse(data);
+}
+
+export function validateAddAttachmentToCard(data: unknown) {
+  return addAttachmentToCardSchema.parse(data);
+}
+
+export function validateDeleteAttachmentFromCard(data: unknown) {
+  return deleteAttachmentFromCardSchema.parse(data);
+}
+
+export function validateCreateChecklistOnCard(data: unknown) {
+  return createChecklistOnCardSchema.parse(data);
+}
+
+export function validateUpdateCheckItem(data: unknown) {
+  return updateCheckItemSchema.parse(data);
+}
+
+export function validateDeleteCheckItem(data: unknown) {
+  return deleteCheckItemSchema.parse(data);
+}
+
+export function validateAddLabelToCard(data: unknown) {
+  return addLabelToCardSchema.parse(data);
+}
+
+export function validateRemoveLabelFromCard(data: unknown) {
+  return removeLabelFromCardSchema.parse(data);
+}
+
+export function validateAddMemberToCard(data: unknown) {
+  return addMemberToCardSchema.parse(data);
+}
+
+export function validateRemoveMemberFromCard(data: unknown) {
+  return removeMemberFromCardSchema.parse(data);
+}
+
+export function validateArchiveCard(data: unknown) {
+  return archiveCardSchema.parse(data);
+}
+
+export function validateCreateLabel(data: unknown) {
+  return createLabelSchema.parse(data);
+}
+
+export function validateGetLabel(data: unknown) {
+  return getLabelSchema.parse(data);
+}
+
+export function validateUpdateLabel(data: unknown) {
+  return updateLabelSchema.parse(data);
+}
+
+export function validateDeleteLabel(data: unknown) {
+  return deleteLabelSchema.parse(data);
+}
+
+export function validateUpdateLabelField(data: unknown) {
+  return updateLabelFieldSchema.parse(data);
 }
 
 export function formatValidationError(error: z.ZodError): string {

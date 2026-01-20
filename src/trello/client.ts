@@ -1,13 +1,16 @@
 import { logger } from '../utils/logger.js';
-import { insights } from '../utils/appInsights.js';
 import type { 
   TrelloCredentials, 
   TrelloBoard, 
   TrelloList, 
   TrelloCard, 
+  TrelloLabel,
   CreateCardRequest,
   UpdateCardRequest,
   MoveCardRequest,
+  CreateLabelRequest,
+  UpdateLabelRequest,
+  UpdateLabelFieldRequest,
   TrelloError,
   RateLimitInfo,
   TrelloApiResponse
@@ -191,12 +194,11 @@ export class TrelloClient {
           // Handle rate limiting
           if (response.status === 429) {
             const retryAfter = parseInt(response.headers.get('retry-after') || '60', 10);
-            logger.warn(`Rate limited, waiting ${retryAfter}s`, { 
-              operation, 
-              attempt, 
-              maxRetries: this.retryConfig.maxRetries 
+            logger.warn(`Rate limited, waiting ${retryAfter}s`, {
+              operation,
+              attempt,
+              maxRetries: this.retryConfig.maxRetries
             });
-            insights.trackEvent('TrelloRateLimit', { operation, attempt, retryAfter });
             await this.sleep(retryAfter * 1000);
             continue;
           }
@@ -211,12 +213,7 @@ export class TrelloClient {
           duration: `${duration}ms`,
           rateLimit
         });
-        
-        insights.trackDependency('HTTP', `Trello API ${operation}`, url, duration, true, response.status.toString(), {
-          statusCode: response.status.toString(),
-          rateLimit: rateLimit?.remaining?.toString()
-        });
-        
+
         return {
           data,
           rateLimit
@@ -232,12 +229,11 @@ export class TrelloClient {
         
         if (attempt < this.retryConfig.maxRetries && this.shouldRetry(error)) {
           const delay = this.calculateBackoffDelay(attempt);
-          logger.debug(`Retrying ${operation}`, { 
-            delay: `${delay}ms`, 
-            attempt, 
-            maxRetries: this.retryConfig.maxRetries 
+          logger.debug(`Retrying ${operation}`, {
+            delay: `${delay}ms`,
+            attempt,
+            maxRetries: this.retryConfig.maxRetries
           });
-          insights.trackEvent('TrelloRetry', { operation, attempt, delay });
           await this.sleep(delay);
           continue;
         }
@@ -249,17 +245,7 @@ export class TrelloClient {
           status: trelloError.status,
           duration: `${duration}ms`
         });
-        
-        insights.trackDependency('HTTP', `Trello API ${operation}`, url, duration, false, trelloError.status?.toString() || '500', {
-          error: trelloError.message,
-          statusCode: trelloError.status?.toString() || '500'
-        });
-        
-        insights.trackException(new Error(trelloError.message), {
-          operation,
-          trelloError: JSON.stringify(trelloError)
-        });
-        
+
         throw trelloError;
       }
     }
@@ -569,18 +555,177 @@ export class TrelloClient {
     fields?: string[];
   }): Promise<TrelloApiResponse<any[]>> {
     const params: Record<string, string> = {};
-    
+
     if (options?.checkItems) {
       params.checkItems = options.checkItems;
     }
     if (options?.fields) {
       params.fields = options.fields.join(',');
     }
-    
+
     return this.makeRequest<any[]>(
       `/cards/${cardId}/checklists`,
       { params },
       `Get checklists for card ${cardId}`
+    );
+  }
+
+  async addAttachmentToCard(cardId: string, data: {
+    url?: string;
+    name?: string;
+    mimeType?: string;
+    setCover?: boolean;
+  }): Promise<TrelloApiResponse<any>> {
+    return this.makeRequest<any>(
+      `/cards/${cardId}/attachments`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data)
+      },
+      `Add attachment to card ${cardId}`
+    );
+  }
+
+  async deleteAttachmentFromCard(cardId: string, attachmentId: string): Promise<TrelloApiResponse<void>> {
+    return this.makeRequest<void>(
+      `/cards/${cardId}/attachments/${attachmentId}`,
+      { method: 'DELETE' },
+      `Delete attachment ${attachmentId} from card ${cardId}`
+    );
+  }
+
+  async createChecklistOnCard(cardId: string, data: {
+    name?: string;
+    idChecklistSource?: string;
+    pos?: string | number;
+  }): Promise<TrelloApiResponse<any>> {
+    return this.makeRequest<any>(
+      `/cards/${cardId}/checklists`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data)
+      },
+      `Create checklist on card ${cardId}`
+    );
+  }
+
+  async updateCheckItem(cardId: string, checkItemId: string, data: {
+    name?: string;
+    state?: 'complete' | 'incomplete';
+    pos?: string | number;
+  }): Promise<TrelloApiResponse<any>> {
+    return this.makeRequest<any>(
+      `/cards/${cardId}/checkItem/${checkItemId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      },
+      `Update check item ${checkItemId} on card ${cardId}`
+    );
+  }
+
+  async deleteCheckItem(cardId: string, checkItemId: string): Promise<TrelloApiResponse<void>> {
+    return this.makeRequest<void>(
+      `/cards/${cardId}/checkItem/${checkItemId}`,
+      { method: 'DELETE' },
+      `Delete check item ${checkItemId} from card ${cardId}`
+    );
+  }
+
+  async addLabelToCard(cardId: string, labelId: string): Promise<TrelloApiResponse<any>> {
+    return this.makeRequest<any>(
+      `/cards/${cardId}/idLabels`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ value: labelId })
+      },
+      `Add label ${labelId} to card ${cardId}`
+    );
+  }
+
+  async removeLabelFromCard(cardId: string, labelId: string): Promise<TrelloApiResponse<void>> {
+    return this.makeRequest<void>(
+      `/cards/${cardId}/idLabels/${labelId}`,
+      { method: 'DELETE' },
+      `Remove label ${labelId} from card ${cardId}`
+    );
+  }
+
+  async addMemberToCard(cardId: string, memberId: string): Promise<TrelloApiResponse<any>> {
+    return this.makeRequest<any>(
+      `/cards/${cardId}/idMembers`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ value: memberId })
+      },
+      `Add member ${memberId} to card ${cardId}`
+    );
+  }
+
+  async removeMemberFromCard(cardId: string, memberId: string): Promise<TrelloApiResponse<void>> {
+    return this.makeRequest<void>(
+      `/cards/${cardId}/idMembers/${memberId}`,
+      { method: 'DELETE' },
+      `Remove member ${memberId} from card ${cardId}`
+    );
+  }
+
+  // Label operations
+  async createLabel(labelData: CreateLabelRequest): Promise<TrelloApiResponse<TrelloLabel>> {
+    return this.makeRequest<TrelloLabel>(
+      '/labels',
+      {
+        method: 'POST',
+        body: JSON.stringify(labelData)
+      },
+      `Create label "${labelData.name}"`
+    );
+  }
+
+  async getLabel(labelId: string, fields?: string): Promise<TrelloApiResponse<TrelloLabel>> {
+    const params: Record<string, string> = {};
+    if (fields) {
+      params.fields = fields;
+    }
+
+    return this.makeRequest<TrelloLabel>(
+      `/labels/${labelId}`,
+      { params },
+      `Get label ${labelId}`
+    );
+  }
+
+  async updateLabel(labelId: string, updates: UpdateLabelRequest): Promise<TrelloApiResponse<TrelloLabel>> {
+    return this.makeRequest<TrelloLabel>(
+      `/labels/${labelId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      },
+      `Update label ${labelId}`
+    );
+  }
+
+  async deleteLabel(labelId: string): Promise<TrelloApiResponse<void>> {
+    return this.makeRequest<void>(
+      `/labels/${labelId}`,
+      { method: 'DELETE' },
+      `Delete label ${labelId}`
+    );
+  }
+
+  async updateLabelField(labelId: string, fieldData: UpdateLabelFieldRequest): Promise<TrelloApiResponse<TrelloLabel>> {
+    const params: Record<string, string> = {
+      value: fieldData.value
+    };
+
+    return this.makeRequest<TrelloLabel>(
+      `/labels/${labelId}/${fieldData.field}`,
+      {
+        method: 'PUT',
+        params
+      },
+      `Update label ${labelId} field ${fieldData.field}`
     );
   }
 }

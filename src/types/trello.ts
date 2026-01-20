@@ -145,6 +145,22 @@ export interface MoveCardRequest {
   pos?: number | string | undefined;
 }
 
+export interface CreateLabelRequest {
+  name: string;
+  color: string | null;
+  idBoard: string;
+}
+
+export interface UpdateLabelRequest {
+  name?: string | undefined;
+  color?: string | null | undefined;
+}
+
+export interface UpdateLabelFieldRequest {
+  field: 'name' | 'color';
+  value: string;
+}
+
 export interface TrelloError {
   message: string;
   error?: string;

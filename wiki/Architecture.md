@@ -37,8 +37,7 @@ trello-desktop-mcp/
 │   └── utils/            # Utility Layer
 │       ├── validation.ts # Input Validation
 │       ├── logger.ts     # Structured Logging
-│       ├── health.ts     # Health Monitoring
-│       └── appInsights.ts# Telemetry Integration
+│       └── health.ts     # Health Monitoring
 ```
 
 ## Design Patterns
@@ -240,7 +239,6 @@ class TrelloClient {
     // Rate limit handling
     // Timeout management
     // Error categorization
-    // Telemetry integration
   }
 
   // Resource Methods
@@ -252,7 +250,7 @@ class TrelloClient {
 
 ### 3. Observability Architecture
 
-**Comprehensive Monitoring Stack**:
+**Monitoring Stack**:
 
 ```typescript
 // Structured Logging
@@ -262,13 +260,6 @@ interface LogContext {
   status?: number;
   rateLimit?: RateLimitInfo;
   error?: string;
-}
-
-// Application Insights Integration
-class TelemetryClient {
-  trackEvent(name: string, properties: Record<string, string>);
-  trackDependency(type: string, name: string, data: string, duration: number, success: boolean);
-  trackException(exception: Error, properties: Record<string, string>);
 }
 
 // Health Monitoring
