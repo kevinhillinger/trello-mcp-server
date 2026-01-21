@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Initialize logging first - this sets up file transport and console overrides
+import './utils/logger.js';
+
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { createMCPServer } from './server.js';

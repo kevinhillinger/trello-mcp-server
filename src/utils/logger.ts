@@ -1,73 +1,133 @@
+import pino from 'pino';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
 interface LogContext {
   [key: string]: any;
 }
 
-enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3
+// Get the directory where index.js is located (dist/)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const distDir = dirname(__dirname); // Go up from utils/ to dist/
+const logsDir = join(distDir, 'logs');
+const logFilePath = join(logsDir, 'app.log');
+
+// Map environment log level to pino level
+function getPinoLevel(): pino.Level {
+  const envLevel = process.env.LOG_LEVEL?.toLowerCase();
+  switch (envLevel) {
+    case 'debug':
+      return 'debug';
+    case 'info':
+      return 'info';
+    case 'warn':
+      return 'warn';
+    case 'error':
+      return 'error';
+    default:
+      return 'info';
+  }
 }
 
+// Create file transport using pino.transport()
+const transport = pino.transport({
+  target: 'pino/file',
+  options: {
+    destination: logFilePath,
+    mkdir: true,
+  },
+});
+
+// Create pino logger with file transport
+const pinoLogger = pino(
+  {
+    level: getPinoLevel(),
+  },
+  transport
+);
+
+// Store original console methods before overriding
+const originalConsole = {
+  log: console.log.bind(console),
+  info: console.info.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+  debug: console.debug.bind(console),
+};
+
+// Override console methods to route to pino
+function overrideConsoleMethods(): void {
+  console.log = (...args: any[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    pinoLogger.info({ source: 'console.log' }, message);
+  };
+
+  console.info = (...args: any[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    pinoLogger.info({ source: 'console.info' }, message);
+  };
+
+  console.warn = (...args: any[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    pinoLogger.warn({ source: 'console.warn' }, message);
+  };
+
+  console.error = (...args: any[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    pinoLogger.error({ source: 'console.error' }, message);
+  };
+
+  console.debug = (...args: any[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    pinoLogger.debug({ source: 'console.debug' }, message);
+  };
+}
+
+// Apply console overrides
+overrideConsoleMethods();
+
 class Logger {
-  private level: LogLevel;
-
-  constructor() {
-    const envLevel = process.env.LOG_LEVEL?.toUpperCase();
-    switch (envLevel) {
-      case 'DEBUG':
-        this.level = LogLevel.DEBUG;
-        break;
-      case 'INFO':
-        this.level = LogLevel.INFO;
-        break;
-      case 'WARN':
-        this.level = LogLevel.WARN;
-        break;
-      case 'ERROR':
-        this.level = LogLevel.ERROR;
-        break;
-      default:
-        this.level = LogLevel.INFO;
-    }
-  }
-
-  private log(level: LogLevel, message: string, context?: LogContext) {
-    if (level < this.level) return;
-
-    // Desktop version: Disable all logging to stdout
-    // Only log to stderr if explicitly enabled
-    if (process.env.MCP_DESKTOP_MODE === 'true') {
-      return; // No logging in desktop mode
-    }
-
-    const timestamp = new Date().toISOString();
-    const levelName = LogLevel[level];
-    
-    const logEntry = {
-      timestamp,
-      level: levelName,
-      message,
-      ...(context && { context })
-    };
-
-    console.log(JSON.stringify(logEntry));
-  }
-
   debug(message: string, context?: LogContext) {
-    this.log(LogLevel.DEBUG, message, context);
+    if (context) {
+      pinoLogger.debug(context, message);
+    } else {
+      pinoLogger.debug(message);
+    }
   }
 
   info(message: string, context?: LogContext) {
-    this.log(LogLevel.INFO, message, context);
+    if (context) {
+      pinoLogger.info(context, message);
+    } else {
+      pinoLogger.info(message);
+    }
   }
 
   warn(message: string, context?: LogContext) {
-    this.log(LogLevel.WARN, message, context);
+    if (context) {
+      pinoLogger.warn(context, message);
+    } else {
+      pinoLogger.warn(message);
+    }
   }
 
   error(message: string, context?: LogContext) {
-    this.log(LogLevel.ERROR, message, context);
+    if (context) {
+      pinoLogger.error(context, message);
+    } else {
+      pinoLogger.error(message);
+    }
   }
 
   toolCall(toolName: string, success: boolean, duration: number, context?: LogContext) {
@@ -91,4 +151,6 @@ class Logger {
 }
 
 export const logger = new Logger();
+export const pino_logger = pinoLogger;
+export { originalConsole };
 export type { LogContext };
