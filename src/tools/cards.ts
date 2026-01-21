@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import {
@@ -22,7 +22,7 @@ import {
 
 const createCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_create_card`,
+    name: 'createCard',
     description: 'Create a new card in a Trello list. Use this to add tasks, ideas, or items to your workflow.',
     inputSchema: {
       type: 'object',
@@ -145,7 +145,7 @@ const createCard: ExecutableTool = {
 
 const updateCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_update_card`,
+    name: 'updateCard',
     description: 'Update properties of an existing Trello card. Use this to change card details like name, description, due date, or status.',
     inputSchema: {
       type: 'object',
@@ -261,7 +261,7 @@ const updateCard: ExecutableTool = {
 
 const moveCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_move_card`,
+    name: 'moveCard',
     description: 'Move a card to a different list. Use this to change a card\'s workflow status (e.g., from "To Do" to "In Progress").',
     inputSchema: {
       type: 'object',
@@ -347,7 +347,7 @@ const moveCard: ExecutableTool = {
 
 const getCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_card`,
+    name: 'getCard',
     description: 'Get detailed information about a specific Trello card, including its content, status, members, and attachments.',
     inputSchema: {
       type: 'object',
@@ -461,7 +461,7 @@ const getCard: ExecutableTool = {
 
 const deleteCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_delete_card`,
+    name: 'deleteCard',
     description: 'Permanently delete a Trello card. This action cannot be undone. Use update_card with closed=true to archive instead.',
     inputSchema: {
       type: 'object',
@@ -527,7 +527,7 @@ const deleteCard: ExecutableTool = {
 
 const archiveCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_archive_card`,
+    name: 'archiveCard',
     description: 'Archive or unarchive a Trello card. Archived cards are hidden from the board but can be restored.',
     inputSchema: {
       type: 'object',
@@ -604,7 +604,7 @@ const archiveCard: ExecutableTool = {
 
 const addAttachmentToCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_add_attachment_to_card`,
+    name: 'addAttachmentToCard',
     description: 'Add a URL attachment to a Trello card. Use this to link external resources, documents, or websites.',
     inputSchema: {
       type: 'object',
@@ -694,7 +694,7 @@ const addAttachmentToCard: ExecutableTool = {
 
 const deleteAttachmentFromCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_delete_attachment_from_card`,
+    name: 'deleteAttachmentFromCard',
     description: 'Remove an attachment from a Trello card.',
     inputSchema: {
       type: 'object',
@@ -766,7 +766,7 @@ const deleteAttachmentFromCard: ExecutableTool = {
 
 const createChecklistOnCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_create_checklist_on_card`,
+    name: 'createChecklistOnCard',
     description: 'Create a new checklist on a Trello card. Checklists help track subtasks and progress.',
     inputSchema: {
       type: 'object',
@@ -859,7 +859,7 @@ const createChecklistOnCard: ExecutableTool = {
 
 const updateCheckItem: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_update_check_item`,
+    name: 'updateCheckItem',
     description: 'Update a checklist item on a Trello card. Use this to mark items complete/incomplete or rename them.',
     inputSchema: {
       type: 'object',
@@ -955,7 +955,7 @@ const updateCheckItem: ExecutableTool = {
 
 const deleteCheckItem: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_delete_check_item`,
+    name: 'deleteCheckItem',
     description: 'Delete a checklist item from a Trello card.',
     inputSchema: {
       type: 'object',
@@ -1027,7 +1027,7 @@ const deleteCheckItem: ExecutableTool = {
 
 const addLabelToCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_add_label_to_card`,
+    name: 'addLabelToCard',
     description: 'Add a label to a Trello card for categorization. Labels help organize cards by type, priority, or category.',
     inputSchema: {
       type: 'object',
@@ -1099,7 +1099,7 @@ const addLabelToCard: ExecutableTool = {
 
 const removeLabelFromCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_remove_label_from_card`,
+    name: 'removeLabelFromCard',
     description: 'Remove a label from a Trello card.',
     inputSchema: {
       type: 'object',
@@ -1171,7 +1171,7 @@ const removeLabelFromCard: ExecutableTool = {
 
 const addMemberToCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_add_member_to_card`,
+    name: 'addMemberToCard',
     description: 'Assign a member to a Trello card. Use this to assign responsibility for a task.',
     inputSchema: {
       type: 'object',
@@ -1243,7 +1243,7 @@ const addMemberToCard: ExecutableTool = {
 
 const removeMemberFromCard: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_remove_member_from_card`,
+    name: 'removeMemberFromCard',
     description: 'Remove a member from a Trello card.',
     inputSchema: {
       type: 'object',

@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
@@ -40,7 +40,7 @@ const validateAddComment = (args: unknown) => {
 
 const trelloGetListCards: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_list_cards`,
+    name: 'getListCards',
     description: 'Get all cards in a specific Trello list. Use this to see all tasks/items in a workflow column.',
     inputSchema: {
       type: 'object',
@@ -143,7 +143,7 @@ const trelloGetListCards: ExecutableTool = {
 
 const trelloCreateList: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_create_list`,
+    name: 'createList',
     description: 'Create a new list in a Trello board. Use this to add workflow columns like "To Do", "In Progress", or "Done".',
     inputSchema: {
       type: 'object',
@@ -234,7 +234,7 @@ const trelloCreateList: ExecutableTool = {
 
 const trelloAddComment: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_add_comment`,
+    name: 'addComment',
     description: 'Add a comment to a Trello card. Use this to add notes, updates, or discussions to cards.',
     inputSchema: {
       type: 'object',

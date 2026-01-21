@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import {
@@ -12,7 +12,7 @@ import {
 
 const createLabel: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_create_label`,
+    name: 'createLabel',
     description: 'Create a new label on a Trello board. Use this to add categorization and visual organization to your cards.',
     inputSchema: {
       type: 'object',
@@ -94,7 +94,7 @@ const createLabel: ExecutableTool = {
 
 const getLabel: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_label`,
+    name: 'getLabel',
     description: 'Get detailed information about a specific Trello label, including its name, color, and usage.',
     inputSchema: {
       type: 'object',
@@ -170,7 +170,7 @@ const getLabel: ExecutableTool = {
 
 const updateLabel: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_update_label`,
+    name: 'updateLabel',
     description: 'Update properties of an existing Trello label. Use this to change the label\'s name or color.',
     inputSchema: {
       type: 'object',
@@ -252,7 +252,7 @@ const updateLabel: ExecutableTool = {
 
 const deleteLabel: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_delete_label`,
+    name: 'deleteLabel',
     description: 'Delete a label from a Trello board. Use this to remove unused or obsolete labels. Warning: This will remove the label from all cards that use it.',
     inputSchema: {
       type: 'object',
@@ -317,7 +317,7 @@ const deleteLabel: ExecutableTool = {
 
 const updateLabelField: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_update_label_field`,
+    name: 'updateLabelField',
     description: 'Update a specific field on a label. Use this for targeted updates to either the name or color field.',
     inputSchema: {
       type: 'object',

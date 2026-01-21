@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import {
@@ -10,7 +10,7 @@ import {
 
 const listBoards: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_list_boards`,
+    name: 'listBoards',
     description: 'List all Trello boards accessible to the user. Use this to see all boards you have access to, or filter by status.',
     inputSchema: {
       type: 'object',
@@ -85,7 +85,7 @@ const listBoards: ExecutableTool = {
 
 const getBoardDetails: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_board_details`,
+    name: 'getBoardDetails',
     description: 'Get detailed information about a specific Trello board, including its lists and cards. Useful for understanding board structure and content.',
     inputSchema: {
       type: 'object',
@@ -187,7 +187,7 @@ const getBoardDetails: ExecutableTool = {
 
 const getLists: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_lists`,
+    name: 'getLists',
     description: 'Get all lists in a specific Trello board. Use this to see the workflow columns (like "To Do", "In Progress", "Done") in a board.',
     inputSchema: {
       type: 'object',

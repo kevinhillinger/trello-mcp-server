@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
@@ -28,7 +28,7 @@ const validateGetMember = (args: unknown) => {
 
 const trelloGetUserBoards: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_user_boards`,
+    name: 'getUserBoards',
     description: 'Get all boards accessible to the current user. This is the starting point for exploring your Trello workspace.',
     inputSchema: {
       type: 'object',
@@ -122,7 +122,7 @@ const trelloGetUserBoards: ExecutableTool = {
 
 const trelloGetMember: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_member`,
+    name: 'getMember',
     description: 'Get details about a specific Trello member/user, including their boards and profile information.',
     inputSchema: {
       type: 'object',

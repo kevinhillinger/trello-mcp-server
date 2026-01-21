@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
@@ -20,7 +20,7 @@ const validateSearch = (args: unknown) => {
 
 const trelloSearch: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_search`,
+    name: 'search',
     description: 'Universal search across all Trello content (boards, cards, members). Use this to find specific items by keywords or phrases.',
     inputSchema: {
       type: 'object',

@@ -1,4 +1,4 @@
-import { type ExecutableTool, ToolNamePrefix } from '../types/mcp.js';
+import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
@@ -73,7 +73,7 @@ const validateGetBoardLabels = (args: unknown) => {
 
 const trelloGetBoardCards: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_board_cards`,
+    name: 'getBoardCards',
     description: 'Get all cards from a Trello board with optional filtering and detailed information like attachments and members.',
     inputSchema: {
       type: 'object',
@@ -190,7 +190,7 @@ const trelloGetBoardCards: ExecutableTool = {
 
 const trelloGetCardActions: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_card_actions`,
+    name: 'getCardActions',
     description: 'Get activity history and comments for a specific Trello card. Useful for tracking changes and discussions.',
     inputSchema: {
       type: 'object',
@@ -294,7 +294,7 @@ const trelloGetCardActions: ExecutableTool = {
 
 const trelloGetCardAttachments: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_card_attachments`,
+    name: 'getCardAttachments',
     description: 'Get all attachments (files, links) for a specific Trello card.',
     inputSchema: {
       type: 'object',
@@ -382,7 +382,7 @@ const trelloGetCardAttachments: ExecutableTool = {
 
 const trelloGetCardChecklists: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_card_checklists`,
+    name: 'getCardChecklists',
     description: 'Get all checklists and their items for a specific Trello card.',
     inputSchema: {
       type: 'object',
@@ -475,7 +475,7 @@ const trelloGetCardChecklists: ExecutableTool = {
 
 const trelloGetBoardMembers: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_board_members`,
+    name: 'getBoardMembers',
     description: 'Get all members who have access to a specific Trello board.',
     inputSchema: {
       type: 'object',
@@ -550,7 +550,7 @@ const trelloGetBoardMembers: ExecutableTool = {
 
 const trelloGetBoardLabels: ExecutableTool = {
   tool: {
-    name: `${ToolNamePrefix}_get_board_labels`,
+    name: 'getBoardLabels',
     description: 'Get all labels available on a specific Trello board for categorizing cards.',
     inputSchema: {
       type: 'object',
