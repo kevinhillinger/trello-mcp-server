@@ -273,120 +273,6 @@ export class TrelloClient {
     return false;
   }
 
-  private async makeFileAttachmentRequest<T>(
-    endpoint: string,
-    data: {
-      file?: Buffer;
-      name?: string;
-      mimeType?: string;
-      setCover?: boolean;
-    },
-    operation: string
-  ): Promise<TrelloApiResponse<T>> {
-    const url = this.buildURL(endpoint);
-    const startTime = Date.now();
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= this.retryConfig.maxRetries; attempt++) {
-      try {
-        // Use FormData from node-fetch compatible API
-        const FormData = (globalThis as any).FormData || require('form-data');
-        const formData = new FormData();
-
-        // Add file if present
-        if (data.file) {
-          // Convert Buffer to Uint8Array for Blob compatibility
-          const uint8Array = new Uint8Array(data.file);
-          const blob = new Blob([uint8Array], { type: data.mimeType || 'text/markdown' });
-          formData.append('file', blob, data.name || 'attachment');
-        }
-
-        // Add other fields
-        if (data.name) {
-          formData.append('name', data.name);
-        }
-        if (data.mimeType) {
-          formData.append('mimeType', data.mimeType);
-        }
-        if (data.setCover !== undefined) {
-          formData.append('setCover', String(data.setCover));
-        }
-
-        const response = await this.fetchWithTimeout(url, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'TrelloMCPServer/1.0.0 (Node.js 22)'
-            // Note: Don't set Content-Type - fetch will set it with boundary automatically
-          }
-        });
-
-        const rateLimit = this.extractRateLimitInfo(response);
-        const duration = Date.now() - startTime;
-
-        if (!response.ok) {
-          // Handle rate limiting
-          if (response.status === 429) {
-            const retryAfter = parseInt(response.headers.get('retry-after') || '60', 10);
-            logger.warn(`Rate limited, waiting ${retryAfter}s`, {
-              operation,
-              attempt,
-              maxRetries: this.retryConfig.maxRetries
-            });
-            await this.sleep(retryAfter * 1000);
-            continue;
-          }
-
-          throw response;
-        }
-
-        const result = await response.json() as T;
-
-        logger.info(`Trello API ${operation} successful`, {
-          status: response.status,
-          duration: `${duration}ms`,
-          rateLimit
-        });
-
-        return {
-          data: result,
-          rateLimit
-        };
-      } catch (error) {
-        lastError = error;
-        const duration = Date.now() - startTime;
-
-        if (error instanceof Response && error.status === 429) {
-          continue; // Already handled above
-        }
-
-        if (attempt < this.retryConfig.maxRetries && this.shouldRetry(error)) {
-          const delay = this.calculateBackoffDelay(attempt);
-          logger.debug(`Retrying ${operation}`, {
-            delay: `${delay}ms`,
-            attempt,
-            maxRetries: this.retryConfig.maxRetries
-          });
-          await this.sleep(delay);
-          continue;
-        }
-
-        // Final attempt failed
-        const trelloError = this.handleError(error);
-        logger.error(`Trello API ${operation} failed`, {
-          error: trelloError.message,
-          status: trelloError.status,
-          duration: `${duration}ms`
-        });
-
-        throw trelloError;
-      }
-    }
-
-    throw this.handleError(lastError);
-  }
-
   async getMyBoards(filter?: 'all' | 'open' | 'closed'): Promise<TrelloApiResponse<TrelloBoard[]>> {
     return this.makeRequest<TrelloBoard[]>(
       '/members/me/boards',
@@ -686,27 +572,16 @@ export class TrelloClient {
 
   async addAttachmentToCard(cardId: string, data: {
     url?: string;
-    file?: Buffer;
+    file?: string;
     name?: string;
     mimeType?: string;
     setCover?: boolean;
   }): Promise<TrelloApiResponse<any>> {
-    // If file is provided, use multipart/form-data
-    if (data.file && !data.url) {
-      return this.makeFileAttachmentRequest<any>(
-        `/cards/${cardId}/attachments`,
-        data,
-        `Add attachment to card ${cardId}`
-      );
-    }
-    
-    // Otherwise, use URL attachment (JSON)
-    const { file, ...jsonData } = data;
     return this.makeRequest<any>(
       `/cards/${cardId}/attachments`,
       {
         method: 'POST',
-        body: JSON.stringify(jsonData)
+        body: JSON.stringify(data)
       },
       `Add attachment to card ${cardId}`
     );

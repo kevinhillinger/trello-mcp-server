@@ -655,10 +655,12 @@ const addAttachmentToCard: ExecutableTool = {
   },
   callback: async function handleAddAttachmentToCard(args: unknown) {
     try {
-      // Convert base64 file data to Buffer if present
+      // Convert base64 file data to binary string if present
       const argsWithFile = args as any;
       if (argsWithFile.file && typeof argsWithFile.file === 'string') {
-        argsWithFile.file = Buffer.from(argsWithFile.file, 'base64');
+        // Decode base64 to Buffer then to binary string
+        const buffer = Buffer.from(argsWithFile.file, 'base64');
+        argsWithFile.file = buffer.toString('binary');
       }
 
       const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(argsWithFile);
@@ -673,7 +675,7 @@ const addAttachmentToCard: ExecutableTool = {
         attachmentData.url = url;
         if (name) attachmentData.name = name;
       } else if (file) {
-        // File upload
+        // File upload as binary string in JSON
         attachmentData.file = file;
         attachmentData.name = name; // Required for file uploads
         attachmentData.mimeType = mimeType || 'text/markdown';

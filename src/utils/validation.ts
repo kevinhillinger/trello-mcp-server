@@ -81,7 +81,7 @@ export const addAttachmentToCardSchema = z.object({
   token: z.string().min(1, 'Token is required'),
   cardId: trelloIdSchema,
   url: z.string().url('Must be a valid URL').optional(),
-  file: z.instanceof(Buffer).optional(),
+  file: z.string().optional(),
   name: z.string().max(256, 'Name too long').optional(),
   mimeType: z.string().optional(),
   setCover: z.boolean().optional()
