@@ -629,8 +629,7 @@ const addAttachmentToCard: ExecutableTool = {
         },
         file: {
           type: 'string',
-          contentEncoding: 'base64',
-          description: 'Binary file data to upload as attachment (optional if url is provided). Should be base64 encoded.'
+          description: 'Fully qualified path to a local file to upload as attachment (optional if url is provided). Example: "/Users/username/Documents/file.pdf" or "/home/user/document.md"'
         },
         name: {
           type: 'string',
@@ -655,15 +654,7 @@ const addAttachmentToCard: ExecutableTool = {
   },
   callback: async function handleAddAttachmentToCard(args: unknown) {
     try {
-      // Convert base64 file data to binary string if present
-      const argsWithFile = args as any;
-      if (argsWithFile.file && typeof argsWithFile.file === 'string') {
-        // Decode base64 to Buffer then to binary string
-        const buffer = Buffer.from(argsWithFile.file, 'base64');
-        argsWithFile.file = buffer.toString('binary');
-      }
-
-      const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(argsWithFile);
+      const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(args);
 
       const client = new TrelloClient({ apiKey, token });
       
@@ -675,8 +666,22 @@ const addAttachmentToCard: ExecutableTool = {
         attachmentData.url = url;
         if (name) attachmentData.name = name;
       } else if (file) {
-        // File upload as binary string in JSON
-        attachmentData.file = file;
+        // File upload - read from local file path
+        const fs = await import('fs');
+        
+        // Validate file exists
+        if (!fs.existsSync(file)) {
+          throw new Error(`File not found: ${file}`);
+        }
+        
+        // Read file and convert to base64
+        const fileBuffer = fs.readFileSync(file);
+        const base64File = fileBuffer.toString('base64');
+        
+        // Convert base64 to binary string for JSON body
+        const binaryString = Buffer.from(base64File, 'base64').toString('binary');
+        
+        attachmentData.file = binaryString;
         attachmentData.name = name; // Required for file uploads
         attachmentData.mimeType = mimeType || 'text/markdown';
       }
