@@ -80,11 +80,18 @@ export const addAttachmentToCardSchema = z.object({
   apiKey: z.string().min(1, 'API key is required'),
   token: z.string().min(1, 'Token is required'),
   cardId: trelloIdSchema,
-  url: z.string().url('Must be a valid URL'),
+  url: z.string().url('Must be a valid URL').optional(),
+  file: z.instanceof(Buffer).optional(),
   name: z.string().max(256, 'Name too long').optional(),
   mimeType: z.string().optional(),
   setCover: z.boolean().optional()
-});
+}).refine(
+  (data) => data.url || data.file,
+  { message: 'Either url or file must be provided' }
+).refine(
+  (data) => !data.file || data.name,
+  { message: 'name is required when file is provided' }
+);
 
 export const deleteAttachmentFromCardSchema = z.object({
   apiKey: z.string().min(1, 'API key is required'),

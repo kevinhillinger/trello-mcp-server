@@ -605,7 +605,7 @@ const archiveCard: ExecutableTool = {
 const addAttachmentToCard: ExecutableTool = {
   tool: {
     name: 'addAttachmentToCard',
-    description: 'Add a URL attachment to a Trello card. Use this to link external resources, documents, or websites.',
+    description: 'Add an attachment to a Trello card. Can attach either a URL or upload a file. Use this to link external resources, documents, or upload files directly.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -625,11 +625,20 @@ const addAttachmentToCard: ExecutableTool = {
         url: {
           type: 'string',
           format: 'uri',
-          description: 'URL to attach to the card'
+          description: 'URL to attach to the card (optional if file is provided)'
+        },
+        file: {
+          type: 'string',
+          contentEncoding: 'base64',
+          description: 'Binary file data to upload as attachment (optional if url is provided). Should be base64 encoded.'
         },
         name: {
           type: 'string',
-          description: 'Optional display name for the attachment'
+          description: 'Display name for the attachment (required if file is provided, optional if url is provided)'
+        },
+        mimeType: {
+          type: 'string',
+          description: 'MIME type of the file (e.g., "text/markdown", "image/png"). Defaults to "text/markdown" for file uploads.'
         },
         setCover: {
           type: 'boolean',
@@ -637,29 +646,55 @@ const addAttachmentToCard: ExecutableTool = {
           default: false
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'url']
+      required: ['apiKey', 'token', 'cardId'],
+      oneOf: [
+        { required: ['url'] },
+        { required: ['file', 'name'] }
+      ]
     }
   },
   callback: async function handleAddAttachmentToCard(args: unknown) {
     try {
-      const { apiKey, token, cardId, url, name, setCover } = validateAddAttachmentToCard(args);
+      // Convert base64 file data to Buffer if present
+      const argsWithFile = args as any;
+      if (argsWithFile.file && typeof argsWithFile.file === 'string') {
+        argsWithFile.file = Buffer.from(argsWithFile.file, 'base64');
+      }
+
+      const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(argsWithFile);
 
       const client = new TrelloClient({ apiKey, token });
-      const response = await client.addAttachmentToCard(cardId, {
-        url,
-        ...(name && { name }),
-        ...(setCover !== undefined && { setCover })
-      });
+      
+      // Build attachment data
+      const attachmentData: any = {};
+      
+      if (url) {
+        // URL attachment - file is ignored if url is set
+        attachmentData.url = url;
+        if (name) attachmentData.name = name;
+      } else if (file) {
+        // File upload
+        attachmentData.file = file;
+        attachmentData.name = name; // Required for file uploads
+        attachmentData.mimeType = mimeType || 'text/markdown';
+      }
+      
+      if (setCover !== undefined) {
+        attachmentData.setCover = setCover;
+      }
+
+      const response = await client.addAttachmentToCard(cardId, attachmentData);
       const attachment = response.data;
 
       const result = {
-        summary: `Added attachment to card`,
+        summary: `Added ${file ? 'file' : 'URL'} attachment to card`,
         attachment: {
           id: attachment.id,
           name: attachment.name,
           url: attachment.url,
           date: attachment.date,
-          isUpload: attachment.isUpload
+          isUpload: attachment.isUpload,
+          mimeType: attachment.mimeType
         },
         rateLimit: response.rateLimit
       };
