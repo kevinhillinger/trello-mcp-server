@@ -391,6 +391,8 @@ These 6 tools provide access to detailed metadata and advanced operations.
 }
 ```
 
+**Response**: For uploaded files (isUpload=true), the `url` property contains an MCP resource URI (e.g., `trello://cards/{cardId}/attachments/{attachmentId}/download/{fileName}`). When you read this resource using MCP resource reading capabilities, it returns metadata with a `filePath` field pointing to the downloaded file's local location (stored in the `resources` directory relative to the MCP server executable). This approach enables efficient handling of large files without loading them into memory.
+
 **Use Cases**:
 - Review task-related files and documents
 - Generate file inventory reports

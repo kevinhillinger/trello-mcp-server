@@ -383,6 +383,47 @@ This guide provides practical examples of using Trello Desktop MCP for real-worl
 "Update stakeholders on project status"
 ```
 
+### Working with File Attachments
+
+**Scenario**: Access and work with files attached to Trello cards.
+
+```
+"Show me all attachments on the 'API Documentation' card"
+```
+
+**Accessing File Content**:
+
+When you receive attachment information, files uploaded to Trello (where `isUpload: true`) will have a URL with the `trello://` scheme:
+
+```json
+{
+  "id": "6977936da1e1dee4af3c743d",
+  "name": "design_specs.pdf",
+  "url": "trello://cards/697394abd27ef12fbc72318f/attachments/6977936da1e1dee4af3c743d/download/design_specs.pdf",
+  "mimeType": "application/pdf",
+  "bytes": 245678,
+  "isUpload": true
+}
+```
+
+**Important**: The `trello://` URL is an MCP resource URI. To access the file content:
+
+1. **Using MCP Resource Reading**: The MCP server downloads the file to local storage and returns metadata with a `filePath` field pointing to where the downloaded file can be read
+2. **Efficient Large File Handling**: Files are stored in the `resources` directory relative to the MCP server executable, enabling efficient handling of large files without loading them into memory
+3. **Not a filesystem path**: The `trello://` URI itself is not a file path - you must read the resource to get the actual `filePath`
+4. **Not an HTTP URL**: Don't try to fetch the `trello://` URI as a web URL
+
+**Example Workflow**:
+```
+"Get the attachment 'design_specs.pdf' from the 'API Documentation' card and show me its content"
+
+"Download the meeting notes attachment and save it to ./documents folder"
+
+"List all PDF attachments across cards in the 'Project Documentation' board"
+```
+
+The MCP server will automatically handle downloading files to local storage and providing the file path when you reference these `trello://` resource URIs.
+
 ### Report Generation Templates
 
 ```bash

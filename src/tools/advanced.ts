@@ -28,17 +28,6 @@ const validateGetCardActions = (args: unknown) => {
   return schema.parse(args);
 };
 
-const validateGetCardAttachments = (args: unknown) => {
-  const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
-    cardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid card ID format'),
-    fields: z.array(z.string()).optional()
-  });
-
-  return schema.parse(args);
-};
-
 const validateGetCardChecklists = (args: unknown) => {
   const schema = z.object({
     apiKey: z.string().min(1, 'API key is required'),
@@ -292,94 +281,6 @@ const trelloGetCardActions: ExecutableTool = {
   }
 };
 
-const trelloGetCardAttachments: ExecutableTool = {
-  tool: {
-    name: 'getCardAttachments',
-    description: 'Get all attachments (files, links) for a specific Trello card.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
-        cardId: {
-          type: 'string',
-          description: 'ID of the card to get attachments for',
-          pattern: '^[a-f0-9]{24}$'
-        },
-        fields: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Optional: specific fields to include (e.g., ["name", "url", "mimeType", "date"])'
-        }
-      },
-      required: ['apiKey', 'token', 'cardId']
-    }
-  },
-  callback: async function handleTrelloGetCardAttachments(args: unknown) {
-    try {
-      const { apiKey, token, cardId, fields } = validateGetCardAttachments(args);
-      const client = new TrelloClient({ apiKey, token });
-
-      const response = await client.getCardAttachments(cardId, {
-        ...(fields && { fields })
-      });
-      const attachments = response.data;
-
-      const result = {
-        summary: `Found ${attachments.length} attachment(s) for card`,
-        cardId,
-        attachments: attachments.map(attachment => ({
-          id: attachment.id,
-          name: attachment.name,
-          url: attachment.url,
-          mimeType: attachment.mimeType,
-          date: attachment.date,
-          bytes: attachment.bytes,
-          isUpload: attachment.isUpload,
-          previews: attachment.previews?.map((preview: any) => ({
-            id: preview.id,
-            width: preview.width,
-            height: preview.height,
-            url: preview.url
-          })) || []
-        })),
-        rateLimit: response.rateLimit
-      };
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2)
-          }
-        ]
-      };
-    } catch (error) {
-      const errorMessage = error instanceof z.ZodError
-        ? formatValidationError(error)
-        : error instanceof Error
-          ? error.message
-          : 'Unknown error occurred';
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: `Error getting card attachments: ${errorMessage}`
-          }
-        ],
-        isError: true
-      };
-    }
-  }
-};
-
 const trelloGetCardChecklists: ExecutableTool = {
   tool: {
     name: 'getCardChecklists',
@@ -623,7 +524,6 @@ const trelloGetBoardLabels: ExecutableTool = {
 export const advancedTools = new Map<string, ExecutableTool>();
 advancedTools.set(trelloGetBoardCards.tool.name, trelloGetBoardCards);
 advancedTools.set(trelloGetCardActions.tool.name, trelloGetCardActions);
-advancedTools.set(trelloGetCardAttachments.tool.name, trelloGetCardAttachments);
 advancedTools.set(trelloGetCardChecklists.tool.name, trelloGetCardChecklists);
 advancedTools.set(trelloGetBoardMembers.tool.name, trelloGetBoardMembers);
 advancedTools.set(trelloGetBoardLabels.tool.name, trelloGetBoardLabels);

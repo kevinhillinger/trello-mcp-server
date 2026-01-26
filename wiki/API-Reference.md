@@ -517,13 +517,16 @@ interface TrelloCheckItem {
 interface TrelloAttachment {
   id: string;                             // 24-character attachment ID
   name: string;                           // Attachment name
-  url: string;                            // Attachment URL
+  url: string;                            // Attachment URL (for file uploads, this is an MCP resource URI with trello:// scheme)
   bytes?: number;                         // File size in bytes
   date: string;                           // Upload timestamp
   mimeType?: string;                      // MIME type
   previews?: TrelloAttachmentPreview[];   // Preview images
+  isUpload?: boolean;                     // True if this is an uploaded file (vs external link)
 }
 ```
+
+**Note**: When `isUpload` is true, the `url` property contains an MCP resource URI (e.g., `trello://cards/{cardId}/attachments/{attachmentId}/download/{fileName}`). To access the file content, use MCP resource reading capabilities. The resource returns metadata with a `filePath` field pointing to the downloaded file's local location (in the `resources` directory relative to the MCP server executable), enabling efficient handling of large files without loading them into memory.
 
 #### TrelloAction
 ```typescript

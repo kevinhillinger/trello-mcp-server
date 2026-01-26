@@ -159,13 +159,26 @@ The server implements the Model Context Protocol (MCP), which provides:
 │   │   ├── members.ts    # Member-related tools
 │   │   ├── search.ts     # Search functionality
 │   │   └── advanced.ts   # Advanced features
+│   ├── resources/        # MCP resource handlers
+│   │   └── attachments.ts # Attachment download handler
 │   ├── trello/           # Trello API client
 │   │   └── client.ts     # API client with retry logic
 │   ├── types/            # TypeScript type definitions
 │   └── utils/            # Utility functions
+├── resources/            # Downloaded attachment storage (gitignored)
 ├── dist/                 # Compiled JavaScript
 └── package.json          # Project configuration
 ```
+
+### Attachment Handling
+
+The server efficiently handles Trello attachments using MCP resources:
+
+1. **Resource URIs**: When you get card attachments, uploaded files have `trello://` resource URIs
+2. **On-Demand Download**: Files are downloaded to the local `resources/` directory only when accessed
+3. **File Path Response**: The resource returns JSON metadata with a `filePath` field pointing to the downloaded file
+4. **Large File Support**: This approach efficiently handles large files without loading them into memory
+5. **Automatic Cleanup**: The `resources/` directory can be safely deleted; files will be re-downloaded as needed
 
 ### Building from Source
 ```bash

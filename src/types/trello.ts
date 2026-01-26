@@ -105,10 +105,19 @@ export interface TrelloCheckItem {
 export interface TrelloAttachment {
   id: string;
   name: string;
+  /** 
+   * URL of the attachment. 
+   * - If isUpload is false: This will be an external link URL
+   * - If isUpload is true: This will be a local file path in the resources folder after download
+   */
   url: string;
   mimeType: string;
   date: string;
   bytes: number;
+  /** 
+   * Indicates whether this attachment is a file upload (true) or an external link (false).
+   * When true, the file will be downloaded locally and url will contain the local file path.
+   */
   isUpload: boolean;
   previews?: {
     id: string;

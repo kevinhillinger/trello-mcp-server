@@ -8,6 +8,7 @@ import { memberTools } from './members.js';
 import { searchTools } from './search.js';
 import { labelTools } from './labels.js';
 import { advancedTools } from './advanced.js';
+import { attachmentTools } from './attachments.js';
 
 // Combine all tool maps
 const allToolMaps = [
@@ -17,7 +18,8 @@ const allToolMaps = [
   memberTools,
   searchTools,
   labelTools,
-  advancedTools
+  advancedTools,
+  attachmentTools
 ];
 
 // Build the tools array from all ExecutableTool maps
