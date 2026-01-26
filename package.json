@@ -1,7 +1,7 @@
 {
   "name": "trello-mcp-server",
   "version": "1.0.0",
-  "description": "Trello integration for AI agents via Model Context Protocol (MCP)",
+  "description": "Trello integration for AI agents via Model Context Protocol (MCP).",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "mcp",
     "model-context-protocol",
     "trello",
+    "copilot",
     "claude",
     "claude-desktop",
     "api",
@@ -22,16 +23,16 @@
     "productivity",
     "project-management"
   ],
-  "author": "Trello MCP Server Contributors",
-  "license": "MIT",
+  "author": "Semblance Labs",
+  "license": "RPL-1.5",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kevinhillinger/trello-mcp-server.git"
+    "url": "https://github.com/semblancelabs/trello-mcp-server.git"
   },
   "bugs": {
-    "url": "https://github.com/kevinhillinger/trello-mcp-server/issues"
+    "url": "https://github.com/semblancelabs/trello-mcp-server/issues"
   },
-  "homepage": "https://github.com/kevinhillinger/trello-mcp-server#readme",
+  "homepage": "https://github.com/semblancelabs/trello-mcp-server#readme",
   "engines": {
     "node": ">=18.0.0"
   },
