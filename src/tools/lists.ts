@@ -38,7 +38,7 @@ const validateAddComment = (args: unknown) => {
   return schema.parse(args);
 };
 
-const trelloGetListCards: ExecutableTool = {
+const getListCards: ExecutableTool = {
   tool: {
     name: 'getListCards',
     description: 'Get all cards in a specific Trello list. Use this to see all tasks/items in a workflow column.',
@@ -73,7 +73,7 @@ const trelloGetListCards: ExecutableTool = {
       required: ['apiKey', 'token', 'listId']
     }
   },
-  callback: async function handleTrelloGetListCards(args: unknown) {
+  callback: async function getListCardsCallback(args: unknown) {
     try {
       const { apiKey, token, listId, filter, fields } = validateGetListCards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -141,7 +141,7 @@ const trelloGetListCards: ExecutableTool = {
   }
 };
 
-const trelloCreateList: ExecutableTool = {
+const createList: ExecutableTool = {
   tool: {
     name: 'createList',
     description: 'Create a new list in a Trello board. Use this to add workflow columns like "To Do", "In Progress", or "Done".',
@@ -178,7 +178,7 @@ const trelloCreateList: ExecutableTool = {
       required: ['apiKey', 'token', 'name', 'idBoard']
     }
   },
-  callback: async function handleTrelloCreateList(args: unknown) {
+  callback: async function createListCallback(args: unknown) {
     try {
       const listData = validateCreateList(args);
       const { apiKey, token, ...createData } = listData;
@@ -232,7 +232,7 @@ const trelloCreateList: ExecutableTool = {
   }
 };
 
-const trelloAddComment: ExecutableTool = {
+const addComment: ExecutableTool = {
   tool: {
     name: 'addComment',
     description: 'Add a comment to a Trello card. Use this to add notes, updates, or discussions to cards.',
@@ -261,7 +261,7 @@ const trelloAddComment: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'text']
     }
   },
-  callback: async function handleTrelloAddComment(args: unknown) {
+  callback: async function addCommentCallback(args: unknown) {
     try {
       const { apiKey, token, cardId, text } = validateAddComment(args);
       const client = new TrelloClient({ apiKey, token });
@@ -320,6 +320,6 @@ const trelloAddComment: ExecutableTool = {
 };
 
 export const listTools = new Map<string, ExecutableTool>();
-listTools.set(trelloGetListCards.tool.name, trelloGetListCards);
-listTools.set(trelloCreateList.tool.name, trelloCreateList);
-listTools.set(trelloAddComment.tool.name, trelloAddComment);
+listTools.set(getListCards.tool.name, getListCards);
+listTools.set(createList.tool.name, createList);
+listTools.set(addComment.tool.name, addComment);

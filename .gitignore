@@ -5,9 +5,6 @@ package-lock.json
 # Build output
 dist/
 
-# Downloaded resources (attachments)
-resources/
-
 # Environment variables
 .env
 .env.local

@@ -1,4 +1,4 @@
-import type { Tool } from "@modelcontextprotocol/sdk/types";
+import type { Tool, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 
 // Simple callback type for tool handlers
 export type ToolCallback = (args: unknown) => Promise<{
@@ -16,20 +16,10 @@ export enum TrelloResourceType {
 }
 
 /**
- * Response type for attachment resources.
- * Returns metadata with local file path instead of blob content for efficient large file handling.
+ * Response type for file attachment resources.
+ * Uses the MCP SDK's ReadResourceResult type for proper compatibility.
  */
-export interface AttachmentResourceResponse {
-  contents: Array<{
-    uri: string;
-    mimeType: string;
-    /**
-     * Local file path where the downloaded attachment can be read.
-     * The file is downloaded to the resources directory relative to the MCP server executable.
-     */
-    text?: string;  // MCP resource format - JSON stringified metadata
-  }>;
-}
+export type FileAttachmentResourceResult = ReadResourceResult;
 
 export class UnsupportedResourceError extends Error {
   constructor(uri: string) {

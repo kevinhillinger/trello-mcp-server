@@ -60,7 +60,7 @@ const validateGetBoardLabels = (args: unknown) => {
   return schema.parse(args);
 };
 
-const trelloGetBoardCards: ExecutableTool = {
+const getBoardCards: ExecutableTool = {
   tool: {
     name: 'getBoardCards',
     description: 'Get all cards from a Trello board with optional filtering and detailed information like attachments and members.',
@@ -102,7 +102,7 @@ const trelloGetBoardCards: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function handleTrelloGetBoardCards(args: unknown) {
+  callback: async function getBoardCardsCallback(args: unknown) {
     try {
       const { apiKey, token, boardId, attachments, members, filter } = validateGetBoardCards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -177,7 +177,7 @@ const trelloGetBoardCards: ExecutableTool = {
   }
 };
 
-const trelloGetCardActions: ExecutableTool = {
+const getCardActions: ExecutableTool = {
   tool: {
     name: 'getCardActions',
     description: 'Get activity history and comments for a specific Trello card. Useful for tracking changes and discussions.',
@@ -214,7 +214,7 @@ const trelloGetCardActions: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleTrelloGetCardActions(args: unknown) {
+  callback: async function getCardActionsCallback(args: unknown) {
     try {
       const { apiKey, token, cardId, filter, limit } = validateGetCardActions(args);
       const client = new TrelloClient({ apiKey, token });
@@ -281,7 +281,7 @@ const trelloGetCardActions: ExecutableTool = {
   }
 };
 
-const trelloGetCardChecklists: ExecutableTool = {
+const getCardChecklists: ExecutableTool = {
   tool: {
     name: 'getCardChecklists',
     description: 'Get all checklists and their items for a specific Trello card.',
@@ -316,7 +316,7 @@ const trelloGetCardChecklists: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleTrelloGetCardChecklists(args: unknown) {
+  callback: async function getCardChecklistsCallback(args: unknown) {
     try {
       const { apiKey, token, cardId, checkItems, fields } = validateGetCardChecklists(args);
       const client = new TrelloClient({ apiKey, token });
@@ -374,7 +374,7 @@ const trelloGetCardChecklists: ExecutableTool = {
   }
 };
 
-const trelloGetBoardMembers: ExecutableTool = {
+const getBoardMembers: ExecutableTool = {
   tool: {
     name: 'getBoardMembers',
     description: 'Get all members who have access to a specific Trello board.',
@@ -398,7 +398,7 @@ const trelloGetBoardMembers: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function handleTrelloGetBoardMembers(args: unknown) {
+  callback: async function getBoardMembersCallback(args: unknown) {
     try {
       const { apiKey, token, boardId } = validateGetBoardMembers(args);
       const client = new TrelloClient({ apiKey, token });
@@ -449,7 +449,7 @@ const trelloGetBoardMembers: ExecutableTool = {
   }
 };
 
-const trelloGetBoardLabels: ExecutableTool = {
+const getBoardLabels: ExecutableTool = {
   tool: {
     name: 'getBoardLabels',
     description: 'Get all labels available on a specific Trello board for categorizing cards.',
@@ -473,7 +473,7 @@ const trelloGetBoardLabels: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function handleTrelloGetBoardLabels(args: unknown) {
+  callback: async function getBoardLabelsCallback(args: unknown) {
     try {
       const { apiKey, token, boardId } = validateGetBoardLabels(args);
       const client = new TrelloClient({ apiKey, token });
@@ -522,8 +522,8 @@ const trelloGetBoardLabels: ExecutableTool = {
 };
 
 export const advancedTools = new Map<string, ExecutableTool>();
-advancedTools.set(trelloGetBoardCards.tool.name, trelloGetBoardCards);
-advancedTools.set(trelloGetCardActions.tool.name, trelloGetCardActions);
-advancedTools.set(trelloGetCardChecklists.tool.name, trelloGetCardChecklists);
-advancedTools.set(trelloGetBoardMembers.tool.name, trelloGetBoardMembers);
-advancedTools.set(trelloGetBoardLabels.tool.name, trelloGetBoardLabels);
+advancedTools.set(getBoardCards.tool.name, getBoardCards);
+advancedTools.set(getCardActions.tool.name, getCardActions);
+advancedTools.set(getCardChecklists.tool.name, getCardChecklists);
+advancedTools.set(getBoardMembers.tool.name, getBoardMembers);
+advancedTools.set(getBoardLabels.tool.name, getBoardLabels);

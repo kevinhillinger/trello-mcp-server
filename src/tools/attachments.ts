@@ -36,7 +36,7 @@ const validateDownloadFileAttachment = (args: unknown) => {
   return schema.parse(args);
 };
 
-const trelloGetAttachmentsOnCard: ExecutableTool = {
+const getAttachmentsOnCard: ExecutableTool = {
   tool: {
     name: 'getAttachmentsOnCard',
     description: 'Get all attachments (files, links) for a specific Trello card. For file attachments (isUpload=true), the url property contains a trello:// resource URI that can be used immediately with the downloadFileAttachment tool to download the file to a local path.',
@@ -65,7 +65,7 @@ const trelloGetAttachmentsOnCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleTrelloGetAttachmentsOnCard(args: unknown) {
+  callback: async function getAttachmentsOnCardCallback(args: unknown) {
     try {
       const { apiKey, token, cardId, fields } = validateGetAttachmentsOnCard(args);
       const client = new TrelloClient({ apiKey, token });
@@ -137,7 +137,7 @@ const trelloGetAttachmentsOnCard: ExecutableTool = {
   }
 };
 
-const trelloGetAttachmentOnCard: ExecutableTool = {
+const getAttachmentOnCard: ExecutableTool = {
   tool: {
     name: 'getAttachmentOnCard',
     description: 'Get a specific attachment from a Trello card. If the attachment is a file (isUpload=true), the url property contains a trello:// resource URI that can be used with the downloadFileAttachment tool to download the file to a local path.',
@@ -166,27 +166,13 @@ const trelloGetAttachmentOnCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'attachmentId']
     }
   },
-  callback: async function handleTrelloGetAttachmentOnCard(args: unknown) {
+  callback: async function getAttachmentOnCardCallback(args: unknown) {
     try {
       const { apiKey, token, cardId, attachmentId } = validateGetAttachmentOnCard(args);
       const client = new TrelloClient({ apiKey, token });
 
-      // Get the attachment details first
-      const response = await client.getCardAttachments(cardId, {});
-      const attachments = response.data;
-      const attachment = attachments.find((a: any) => a.id === attachmentId);
-
-      if (!attachment) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Attachment ${attachmentId} not found on card ${cardId}`
-            }
-          ],
-          isError: true
-        };
-      }
+      const response = await client.getCardAttachment(cardId, attachmentId);
+      const attachment = response.data;
 
       let finalUrl = attachment.url;
 
@@ -241,7 +227,7 @@ const trelloGetAttachmentOnCard: ExecutableTool = {
   }
 };
 
-const trelloDownloadFileAttachment: ExecutableTool = {
+const downloadFileAttachment: ExecutableTool = {
   tool: {
     name: 'downloadFileAttachment',
     description: 'Download a Trello card attachment file to a specified local path. Accepts a trello:// resource URI and downloads the file content to the given file path.',
@@ -269,7 +255,7 @@ const trelloDownloadFileAttachment: ExecutableTool = {
       required: ['apiKey', 'token', 'resourceUri', 'filePath']
     }
   },
-  callback: async function handleTrelloDownloadFileAttachment(args: unknown) {
+  callback: async function downloadFileAttachmentCallback(args: unknown) {
     try {
       const { apiKey, token, resourceUri, filePath } = validateDownloadFileAttachment(args);
 
@@ -294,21 +280,8 @@ const trelloDownloadFileAttachment: ExecutableTool = {
 
       // Get attachment metadata from Trello API
       const client = new TrelloClient({ apiKey, token });
-      const response = await client.getCardAttachments(cardId, {});
-      const attachments = response.data;
-      const attachment = attachments.find((a: any) => a.id === attachmentId);
-
-      if (!attachment) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Attachment ${attachmentId} not found on card ${cardId}`
-            }
-          ],
-          isError: true
-        };
-      }
+      const response = await client.getCardAttachment(cardId, attachmentId);
+      const attachment = response.data;
 
       // Download the file with OAuth 1.0 authentication
       const authHeader = `OAuth oauth_consumer_key="${apiKey}", oauth_token="${token}"`;
@@ -386,6 +359,6 @@ const trelloDownloadFileAttachment: ExecutableTool = {
 };
 
 export const attachmentTools = new Map<string, ExecutableTool>();
-attachmentTools.set(trelloGetAttachmentsOnCard.tool.name, trelloGetAttachmentsOnCard);
-attachmentTools.set(trelloGetAttachmentOnCard.tool.name, trelloGetAttachmentOnCard);
-attachmentTools.set(trelloDownloadFileAttachment.tool.name, trelloDownloadFileAttachment);
+attachmentTools.set(getAttachmentsOnCard.tool.name, getAttachmentsOnCard);
+attachmentTools.set(getAttachmentOnCard.tool.name, getAttachmentOnCard);
+attachmentTools.set(downloadFileAttachment.tool.name, downloadFileAttachment);

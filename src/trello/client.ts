@@ -538,15 +538,31 @@ export class TrelloClient {
     fields?: string[];
   }): Promise<TrelloApiResponse<any[]>> {
     const params: Record<string, string> = {};
-    
+
     if (options?.fields) {
       params.fields = options.fields.join(',');
     }
-    
+
     return this.makeRequest<any[]>(
       `/cards/${cardId}/attachments`,
       { params },
       `Get attachments for card ${cardId}`
+    );
+  }
+
+  async getCardAttachment(cardId: string, attachmentId: string, options?: {
+    fields?: string[];
+  }): Promise<TrelloApiResponse<any>> {
+    const params: Record<string, string> = {};
+
+    if (options?.fields) {
+      params.fields = options.fields.join(',');
+    }
+
+    return this.makeRequest<any>(
+      `/cards/${cardId}/attachments/${attachmentId}`,
+      { params },
+      `Get attachment ${attachmentId} for card ${cardId}`
     );
   }
 

@@ -26,7 +26,7 @@ const validateGetMember = (args: unknown) => {
   return schema.parse(args);
 };
 
-const trelloGetUserBoards: ExecutableTool = {
+const getUserBoards: ExecutableTool = {
   tool: {
     name: 'getUserBoards',
     description: 'Get all boards accessible to the current user. This is the starting point for exploring your Trello workspace.',
@@ -51,7 +51,7 @@ const trelloGetUserBoards: ExecutableTool = {
       required: ['apiKey', 'token']
     }
   },
-  callback: async function handleTrelloGetUserBoards(args: unknown) {
+  callback: async function getUserBoardsCallback(args: unknown) {
     try {
       const { apiKey, token, filter } = validateGetUserBoards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -120,7 +120,7 @@ const trelloGetUserBoards: ExecutableTool = {
   }
 };
 
-const trelloGetMember: ExecutableTool = {
+const getMember: ExecutableTool = {
   tool: {
     name: 'getMember',
     description: 'Get details about a specific Trello member/user, including their boards and profile information.',
@@ -161,7 +161,7 @@ const trelloGetMember: ExecutableTool = {
       required: ['apiKey', 'token', 'memberId']
     }
   },
-  callback: async function handleTrelloGetMember(args: unknown) {
+  callback: async function getMemberCallback(args: unknown) {
     try {
       const { apiKey, token, memberId, fields, boards, organizations } = validateGetMember(args);
       const client = new TrelloClient({ apiKey, token });
@@ -232,5 +232,5 @@ const trelloGetMember: ExecutableTool = {
 };
 
 export const memberTools = new Map<string, ExecutableTool>();
-memberTools.set(trelloGetUserBoards.tool.name, trelloGetUserBoards);
-memberTools.set(trelloGetMember.tool.name, trelloGetMember);
+memberTools.set(getUserBoards.tool.name, getUserBoards);
+memberTools.set(getMember.tool.name, getMember);
