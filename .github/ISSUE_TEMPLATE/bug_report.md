@@ -65,7 +65,7 @@ Add any other context about the problem here. This could include:
 - Recent changes to setup
 
 ## Checklist
-- [ ] I have checked the [Troubleshooting Guide](https://github.com/kocakli/trello-desktop-mcp/wiki/Troubleshooting)
+- [ ] I have checked the [Troubleshooting Guide](https://github.com/semblancelabs/trello-mcp-server/wiki/Troubleshooting)
 - [ ] I have searched existing issues for duplicates
 - [ ] I have provided all required information above
 - [ ] I have removed all sensitive information (API keys, tokens, personal data)

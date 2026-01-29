@@ -66,6 +66,6 @@ Add any other context, screenshots, mockups, or examples about the feature reque
 
 ## Checklist
 - [ ] I have checked existing issues for similar requests
-- [ ] I have reviewed the [Available Tools](https://github.com/kocakli/trello-desktop-mcp/wiki/Available-Tools) to ensure this doesn't exist
+- [ ] I have reviewed the [Available Tools](https://github.com/semblancelabs/trello-mcp-server/wiki/Available-Tools) to ensure this doesn't exist
 - [ ] I have provided a clear use case and problem statement
 - [ ] I have considered the implementation complexity
