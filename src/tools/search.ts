@@ -7,12 +7,27 @@ const validateSearch = (args: unknown) => {
   const schema = z.object({
     apiKey: z.string().min(1, 'API key is required'),
     token: z.string().min(1, 'Token is required'),
-    query: z.string().min(1, 'Search query is required'),
-    modelTypes: z.array(z.enum(['boards', 'cards', 'members', 'organizations'])).optional(),
-    boardIds: z.array(z.string().regex(/^[a-f0-9]{24}$/, 'Invalid board ID format')).optional(),
-    boardsLimit: z.number().min(1).max(1000).optional(),
-    cardsLimit: z.number().min(1).max(1000).optional(),
-    membersLimit: z.number().min(1).max(1000).optional()
+    query: z.string().min(1, 'Search query is required').max(16384, 'Query must not exceed 16384 characters'),
+    idBoards: z.string().optional(),
+    idOrganizations: z.string().optional(),
+    idCards: z.string().optional(),
+    modelTypes: z.string().optional(),
+    board_fields: z.string().optional(),
+    boards_limit: z.number().min(1).max(1000).optional(),
+    board_organization: z.boolean().optional(),
+    card_fields: z.string().optional(),
+    cards_limit: z.number().min(1).max(1000).optional(),
+    cards_page: z.number().min(0).max(100).optional(),
+    card_board: z.boolean().optional(),
+    card_list: z.boolean().optional(),
+    card_members: z.boolean().optional(),
+    card_stickers: z.boolean().optional(),
+    card_attachments: z.string().optional(),
+    organization_fields: z.string().optional(),
+    organizations_limit: z.number().min(1).max(1000).optional(),
+    member_fields: z.string().optional(),
+    members_limit: z.number().min(1).max(1000).optional(),
+    partial: z.boolean().optional()
   });
 
   return schema.parse(args);
@@ -21,7 +36,7 @@ const validateSearch = (args: unknown) => {
 const search: ExecutableTool = {
   tool: {
     name: 'search',
-    description: 'Universal search across all Trello content (boards, cards, members). Use this to find specific items by keywords or phrases.',
+    description: 'Search across Trello content (boards, cards, members, organizations). Use this to find specific items by keywords or phrases.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -35,46 +50,116 @@ const search: ExecutableTool = {
         },
         query: {
           type: 'string',
-          description: 'Search term or phrase to find in Trello content',
-          minLength: 1
+          description: 'The search query (1 to 16384 characters)',
+          minLength: 1,
+          maxLength: 16384
+        },
+        idBoards: {
+          type: 'string',
+          description: '"mine" or a comma-separated list of Board IDs to limit search scope'
+        },
+        idOrganizations: {
+          type: 'string',
+          description: 'A comma-separated list of Organization IDs to limit search scope'
+        },
+        idCards: {
+          type: 'string',
+          description: 'A comma-separated list of Card IDs to limit search scope'
         },
         modelTypes: {
-          type: 'array',
-          items: {
-            type: 'string',
-            enum: ['boards', 'cards', 'members', 'organizations']
-          },
-          description: 'Types of content to search in. Defaults to all types if not specified',
-          default: ['boards', 'cards', 'members']
+          type: 'string',
+          description: 'What types to search: "all" or comma-separated list of: actions, boards, cards, members, organizations',
+          default: 'all'
         },
-        boardIds: {
-          type: 'array',
-          items: {
-            type: 'string',
-            pattern: '^[a-f0-9]{24}$'
-          },
-          description: 'Optional: limit search to specific boards by their IDs'
+        board_fields: {
+          type: 'string',
+          description: 'Board fields to return: "all" or comma-separated list of: closed, dateLastActivity, dateLastView, desc, descData, idOrganization, invitations, invited, labelNames, memberships, name, pinned, powerUps, prefs, shortLink, shortUrl, starred, subscribed, url',
+          default: 'name,idOrganization'
         },
-        boardsLimit: {
-          type: 'number',
+        boards_limit: {
+          type: 'integer',
+          description: 'Maximum number of boards to return (max 1000)',
           minimum: 1,
           maximum: 1000,
-          description: 'Maximum number of boards to return in results',
           default: 10
         },
-        cardsLimit: {
-          type: 'number',
-          minimum: 1,
-          maximum: 1000,
-          description: 'Maximum number of cards to return in results',
-          default: 50
+        board_organization: {
+          type: 'boolean',
+          description: 'Whether to include the parent organization with board results',
+          default: false
         },
-        membersLimit: {
-          type: 'number',
+        card_fields: {
+          type: 'string',
+          description: 'Card fields to return: "all" or comma-separated list of: badges, checkItemStates, closed, dateLastActivity, desc, descData, due, idAttachmentCover, idBoard, idChecklists, idLabels, idList, idMembers, idMembersVoted, idShort, labels, manualCoverAttachment, name, pos, shortLink, shortUrl, subscribed, url',
+          default: 'all'
+        },
+        cards_limit: {
+          type: 'integer',
+          description: 'Maximum number of cards to return (max 1000)',
           minimum: 1,
           maximum: 1000,
-          description: 'Maximum number of members to return in results',
-          default: 20
+          default: 10
+        },
+        cards_page: {
+          type: 'integer',
+          description: 'Page of card results (max 100)',
+          minimum: 0,
+          maximum: 100,
+          default: 0
+        },
+        card_board: {
+          type: 'boolean',
+          description: 'Whether to include the parent board with card results',
+          default: false
+        },
+        card_list: {
+          type: 'boolean',
+          description: 'Whether to include the parent list with card results',
+          default: false
+        },
+        card_members: {
+          type: 'boolean',
+          description: 'Whether to include member objects with card results',
+          default: false
+        },
+        card_stickers: {
+          type: 'boolean',
+          description: 'Whether to include sticker objects with card results',
+          default: false
+        },
+        card_attachments: {
+          type: 'string',
+          description: 'Whether to include attachments: "true", "false", or "cover" for only cover attachments',
+          default: 'false'
+        },
+        organization_fields: {
+          type: 'string',
+          description: 'Organization fields to return: "all" or comma-separated list of: billableMemberCount, desc, descData, displayName, idBoards, invitations, invited, logoHash, memberships, name, powerUps, prefs, premiumFeatures, products, url, website',
+          default: 'name,displayName'
+        },
+        organizations_limit: {
+          type: 'integer',
+          description: 'Maximum number of organizations to return (max 1000)',
+          minimum: 1,
+          maximum: 1000,
+          default: 10
+        },
+        member_fields: {
+          type: 'string',
+          description: 'Member fields to return: "all" or comma-separated list of: avatarHash, bio, bioData, confirmed, fullName, idPremOrgsAdmin, initials, memberType, products, status, url, username',
+          default: 'avatarHash,fullName,initials,username,confirmed'
+        },
+        members_limit: {
+          type: 'integer',
+          description: 'Maximum number of members to return (max 1000)',
+          minimum: 1,
+          maximum: 1000,
+          default: 10
+        },
+        partial: {
+          type: 'boolean',
+          description: 'Enable partial matching. When true, searches for content that starts with any word in query. E.g., searching "dev" will match "Development".',
+          default: false
         }
       },
       required: ['apiKey', 'token', 'query']
@@ -82,18 +167,18 @@ const search: ExecutableTool = {
   },
   callback: async function searchCallback(args: unknown) {
     try {
-      const { apiKey, token, query, modelTypes, boardIds, boardsLimit, cardsLimit, membersLimit } = validateSearch(args);
+      const validated = validateSearch(args);
+      const { apiKey, token, query, ...options } = validated;
       const client = new TrelloClient({ apiKey, token });
 
-      const searchOptions = {
-        ...(modelTypes && { modelTypes }),
-        ...(boardIds && { boardIds }),
-        ...(boardsLimit !== undefined && { boardsLimit }),
-        ...(cardsLimit !== undefined && { cardsLimit }),
-        ...(membersLimit !== undefined && { membersLimit })
-      };
+      const searchOptions = Object.fromEntries(
+        Object.entries(options).filter(([_, v]) => v !== undefined)
+      );
 
-      const response = await client.search(query, Object.keys(searchOptions).length > 0 ? searchOptions : undefined);
+      const response = await client.search(
+        query,
+        Object.keys(searchOptions).length > 0 ? searchOptions : undefined
+      );
       const searchResults = response.data;
 
       const result = {

@@ -379,32 +379,92 @@ export class TrelloClient {
   }
 
   async search(query: string, options?: {
-    modelTypes?: string[];
-    boardIds?: string[];
-    boardsLimit?: number;
-    cardsLimit?: number;
-    membersLimit?: number;
+    idBoards?: string;
+    idOrganizations?: string;
+    idCards?: string;
+    modelTypes?: string;
+    board_fields?: string;
+    boards_limit?: number;
+    board_organization?: boolean;
+    card_fields?: string;
+    cards_limit?: number;
+    cards_page?: number;
+    card_board?: boolean;
+    card_list?: boolean;
+    card_members?: boolean;
+    card_stickers?: boolean;
+    card_attachments?: string;
+    organization_fields?: string;
+    organizations_limit?: number;
+    member_fields?: string;
+    members_limit?: number;
+    partial?: boolean;
   }): Promise<TrelloApiResponse<any>> {
     const params: Record<string, string> = {
-      query: encodeURIComponent(query)
+      query
     };
-    
+
+    if (options?.idBoards) {
+      params.idBoards = options.idBoards;
+    }
+    if (options?.idOrganizations) {
+      params.idOrganizations = options.idOrganizations;
+    }
+    if (options?.idCards) {
+      params.idCards = options.idCards;
+    }
     if (options?.modelTypes) {
-      params.modelTypes = options.modelTypes.join(',');
+      params.modelTypes = options.modelTypes;
     }
-    if (options?.boardIds) {
-      params.idBoards = options.boardIds.join(',');
+    if (options?.board_fields) {
+      params.board_fields = options.board_fields;
     }
-    if (options?.boardsLimit) {
-      params.boards_limit = options.boardsLimit.toString();
+    if (options?.boards_limit !== undefined) {
+      params.boards_limit = options.boards_limit.toString();
     }
-    if (options?.cardsLimit) {
-      params.cards_limit = options.cardsLimit.toString();
+    if (options?.board_organization !== undefined) {
+      params.board_organization = options.board_organization.toString();
     }
-    if (options?.membersLimit) {
-      params.members_limit = options.membersLimit.toString();
+    if (options?.card_fields) {
+      params.card_fields = options.card_fields;
     }
-    
+    if (options?.cards_limit !== undefined) {
+      params.cards_limit = options.cards_limit.toString();
+    }
+    if (options?.cards_page !== undefined) {
+      params.cards_page = options.cards_page.toString();
+    }
+    if (options?.card_board !== undefined) {
+      params.card_board = options.card_board.toString();
+    }
+    if (options?.card_list !== undefined) {
+      params.card_list = options.card_list.toString();
+    }
+    if (options?.card_members !== undefined) {
+      params.card_members = options.card_members.toString();
+    }
+    if (options?.card_stickers !== undefined) {
+      params.card_stickers = options.card_stickers.toString();
+    }
+    if (options?.card_attachments) {
+      params.card_attachments = options.card_attachments;
+    }
+    if (options?.organization_fields) {
+      params.organization_fields = options.organization_fields;
+    }
+    if (options?.organizations_limit !== undefined) {
+      params.organizations_limit = options.organizations_limit.toString();
+    }
+    if (options?.member_fields) {
+      params.member_fields = options.member_fields;
+    }
+    if (options?.members_limit !== undefined) {
+      params.members_limit = options.members_limit.toString();
+    }
+    if (options?.partial !== undefined) {
+      params.partial = options.partial.toString();
+    }
+
     return this.makeRequest<any>(
       '/search',
       { params },
