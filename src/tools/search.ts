@@ -1,12 +1,10 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
 
 const validateSearch = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     query: z.string().min(1, 'Search query is required').max(16384, 'Query must not exceed 16384 characters'),
     idBoards: z.string().optional(),
     idOrganizations: z.string().optional(),
@@ -40,14 +38,6 @@ const search: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         query: {
           type: 'string',
           description: 'The search query (1 to 16384 characters)',
@@ -162,15 +152,14 @@ const search: ExecutableTool = {
           default: false
         }
       },
-      required: ['apiKey', 'token', 'query']
+      required: ['query']
     }
   },
   callback: async (args: unknown) => {
     try {
       const validated = validateSearch(args);
-      const { apiKey, token, query, ...options } = validated;
-      const client = new TrelloClient({ apiKey, token });
-
+      const { query, ...options } = validated;
+      
       const searchOptions = Object.fromEntries(
         Object.entries(options).filter(([_, v]) => v !== undefined)
       );

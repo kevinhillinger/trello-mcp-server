@@ -1,6 +1,6 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import {
   validateCreateCard,
   validateUpdateCard,
@@ -22,8 +22,6 @@ import {
 
 const validateGetCardActions = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     cardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid card ID format'),
     filter: z.string().optional(),
     limit: z.number().min(1).max(1000).optional()
@@ -39,14 +37,6 @@ const createCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         name: {
           type: 'string',
           description: 'Name/title of the card (what the task or item is about)'
@@ -89,16 +79,14 @@ const createCard: ExecutableTool = {
           description: 'Optional array of label IDs to categorize the card'
         }
       },
-      required: ['apiKey', 'token', 'name', 'idList']
+      required: ['name', 'idList']
     }
   },
   callback: async (args: unknown) => {
     try {
       const cardData = validateCreateCard(args);
-      const { apiKey, token, ...createData } = cardData;
 
-      const client = new TrelloClient({ apiKey, token });
-      const response = await client.createCard(createData);
+      const response = await client.createCard(cardData);
       const card = response.data;
 
       const result = {
@@ -162,14 +150,6 @@ const updateCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to update (you can get this from board details or card searches)',
@@ -209,15 +189,14 @@ const updateCard: ExecutableTool = {
           description: 'Change position in the list: "top", "bottom", or specific number'
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
       const updateData = validateUpdateCard(args);
-      const { apiKey, token, cardId, ...updates } = updateData;
+      const { cardId, ...updates } = updateData;
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.updateCard(cardId, updates);
       const card = response.data;
 
@@ -278,14 +257,6 @@ const moveCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to move (you can get this from board details or card searches)',
@@ -304,15 +275,14 @@ const moveCard: ExecutableTool = {
           description: 'Position in the destination list: "top", "bottom", or specific number'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'idList']
+      required: ['cardId', 'idList']
     }
   },
   callback: async (args: unknown) => {
     try {
       const moveData = validateMoveCard(args);
-      const { apiKey, token, cardId, ...moveParams } = moveData;
+      const { cardId, ...moveParams } = moveData;
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.moveCard(cardId, moveParams);
       const card = response.data;
 
@@ -364,14 +334,6 @@ const getCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to retrieve (you can get this from board details or searches)',
@@ -383,14 +345,13 @@ const getCard: ExecutableTool = {
           default: false
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, includeDetails } = validateGetCard(args);
+      const { cardId, includeDetails } = validateGetCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.getCard(cardId, includeDetails);
       const card = response.data;
 
@@ -478,28 +439,19 @@ const deleteCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to delete (you can get this from board details or searches)',
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId } = validateDeleteCard(args);
+      const { cardId } = validateDeleteCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.deleteCard(cardId);
 
       const result = {
@@ -544,14 +496,6 @@ const archiveCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to archive/unarchive',
@@ -563,14 +507,13 @@ const archiveCard: ExecutableTool = {
           default: true
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, archive } = validateArchiveCard(args);
+      const { cardId, archive } = validateArchiveCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.updateCard(cardId, { closed: archive });
       const card = response.data;
 
@@ -621,14 +564,6 @@ const addAttachmentToCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to add attachment to',
@@ -657,7 +592,7 @@ const addAttachmentToCard: ExecutableTool = {
           default: false
         }
       },
-      required: ['apiKey', 'token', 'cardId'],
+      required: ['cardId'],
       oneOf: [
         { required: ['url'] },
         { required: ['file', 'name'] }
@@ -666,10 +601,8 @@ const addAttachmentToCard: ExecutableTool = {
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(args);
+      const { cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
-      
       // Build attachment data
       const attachmentData: any = {};
       
@@ -753,14 +686,6 @@ const deleteAttachmentFromCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card containing the attachment',
@@ -772,14 +697,13 @@ const deleteAttachmentFromCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'attachmentId']
+      required: ['cardId', 'attachmentId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, attachmentId } = validateDeleteAttachmentFromCard(args);
+      const { cardId, attachmentId } = validateDeleteAttachmentFromCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.deleteAttachmentFromCard(cardId, attachmentId);
 
       const result = {
@@ -825,14 +749,6 @@ const createChecklistOnCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to add the checklist to',
@@ -855,14 +771,13 @@ const createChecklistOnCard: ExecutableTool = {
           description: 'Position of the checklist: "top", "bottom", or specific number'
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, name, idChecklistSource, pos } = validateCreateChecklistOnCard(args);
+      const { cardId, name, idChecklistSource, pos } = validateCreateChecklistOnCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.createChecklistOnCard(cardId, {
         ...(name && { name }),
         ...(idChecklistSource && { idChecklistSource }),
@@ -918,14 +833,6 @@ const updateCheckItem: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card containing the checklist',
@@ -953,14 +860,13 @@ const updateCheckItem: ExecutableTool = {
           description: 'Position of the check item in the checklist'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'checkItemId']
+      required: ['cardId', 'checkItemId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, checkItemId, name, state, pos } = validateUpdateCheckItem(args);
+      const { cardId, checkItemId, name, state, pos } = validateUpdateCheckItem(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.updateCheckItem(cardId, checkItemId, {
         ...(name && { name }),
         ...(state && { state }),
@@ -1014,14 +920,6 @@ const deleteCheckItem: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card containing the checklist',
@@ -1033,14 +931,13 @@ const deleteCheckItem: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'checkItemId']
+      required: ['cardId', 'checkItemId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, checkItemId } = validateDeleteCheckItem(args);
+      const { cardId, checkItemId } = validateDeleteCheckItem(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.deleteCheckItem(cardId, checkItemId);
 
       const result = {
@@ -1086,14 +983,6 @@ const addLabelToCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to add the label to',
@@ -1105,14 +994,13 @@ const addLabelToCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'labelId']
+      required: ['cardId', 'labelId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, labelId } = validateAddLabelToCard(args);
+      const { cardId, labelId } = validateAddLabelToCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.addLabelToCard(cardId, labelId);
 
       const result = {
@@ -1158,14 +1046,6 @@ const removeLabelFromCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to remove the label from',
@@ -1177,14 +1057,13 @@ const removeLabelFromCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'labelId']
+      required: ['cardId', 'labelId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, labelId } = validateRemoveLabelFromCard(args);
+      const { cardId, labelId } = validateRemoveLabelFromCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.removeLabelFromCard(cardId, labelId);
 
       const result = {
@@ -1230,14 +1109,6 @@ const addMemberToCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to assign the member to',
@@ -1249,14 +1120,13 @@ const addMemberToCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'memberId']
+      required: ['cardId', 'memberId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, memberId } = validateAddMemberToCard(args);
+      const { cardId, memberId } = validateAddMemberToCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.addMemberToCard(cardId, memberId);
 
       const result = {
@@ -1302,14 +1172,6 @@ const removeMemberFromCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to remove the member from',
@@ -1321,14 +1183,13 @@ const removeMemberFromCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'memberId']
+      required: ['cardId', 'memberId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, memberId } = validateRemoveMemberFromCard(args);
+      const { cardId, memberId } = validateRemoveMemberFromCard(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.removeMemberFromCard(cardId, memberId);
 
       const result = {
@@ -1374,14 +1235,6 @@ const getCardActions: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to get actions for',
@@ -1401,14 +1254,13 @@ const getCardActions: ExecutableTool = {
           default: 50
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, filter, limit } = validateGetCardActions(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { cardId, filter, limit } = validateGetCardActions(args);
+      
       const response = await client.getCardActions(cardId, {
         ...(filter && { filter }),
         ...(limit !== undefined && { limit })

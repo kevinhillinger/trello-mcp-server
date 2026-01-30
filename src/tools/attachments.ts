@@ -1,12 +1,10 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
 
 const validateGetAttachmentsOnCard = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     cardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid card ID format'),
     fields: z.array(z.string()).optional()
   });
@@ -16,8 +14,6 @@ const validateGetAttachmentsOnCard = (args: unknown) => {
 
 const validateGetAttachmentOnCard = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     cardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid card ID format'),
     attachmentId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid attachment ID format')
   });
@@ -27,8 +23,6 @@ const validateGetAttachmentOnCard = (args: unknown) => {
 
 const validateDownloadFileAttachment = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     resourceUri: z.string().regex(/^trello:\/\//, 'Resource URI must start with trello://'),
     filePath: z.string().min(1, 'File path is required')
   });
@@ -43,14 +37,6 @@ const getAttachmentsOnCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card to get attachments for',
@@ -62,14 +48,13 @@ const getAttachmentsOnCard: ExecutableTool = {
           description: 'Optional: specific fields to include (e.g., ["name", "url", "mimeType", "date"])'
         }
       },
-      required: ['apiKey', 'token', 'cardId']
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, fields } = validateGetAttachmentsOnCard(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { cardId, fields } = validateGetAttachmentsOnCard(args);
+      
       const response = await client.getCardAttachments(cardId, {
         ...(fields && { fields })
       });
@@ -144,14 +129,6 @@ const getAttachmentOnCard: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         cardId: {
           type: 'string',
           description: 'ID of the card containing the attachment',
@@ -163,14 +140,13 @@ const getAttachmentOnCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'cardId', 'attachmentId']
+      required: ['cardId', 'attachmentId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, cardId, attachmentId } = validateGetAttachmentOnCard(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { cardId, attachmentId } = validateGetAttachmentOnCard(args);
+      
       const response = await client.getCardAttachment(cardId, attachmentId);
       const attachment = response.data;
 
@@ -234,14 +210,6 @@ const downloadFileAttachment: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         resourceUri: {
           type: 'string',
           description: 'The trello:// resource URI (e.g., trello://cards/{cardId}/attachments/{attachmentId}/download/{fileName})',
@@ -252,12 +220,12 @@ const downloadFileAttachment: ExecutableTool = {
           description: 'Local file path where the attachment should be downloaded (e.g., ./downloads/document.pdf)'
         }
       },
-      required: ['apiKey', 'token', 'resourceUri', 'filePath']
+      required: ['resourceUri', 'filePath']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, resourceUri, filePath } = validateDownloadFileAttachment(args);
+      const { resourceUri, filePath } = validateDownloadFileAttachment(args);
 
       // Parse the trello:// URI to extract cardId, attachmentId, and fileName
       const match = resourceUri.match(
@@ -279,20 +247,11 @@ const downloadFileAttachment: ExecutableTool = {
       const [, cardId, attachmentId] = match;
 
       // Get attachment metadata from Trello API
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.getCardAttachment(cardId, attachmentId);
       const attachment = response.data;
 
-      // Download the file with OAuth 1.0 authentication
-      const authHeader = `OAuth oauth_consumer_key="${apiKey}", oauth_token="${token}"`;
-      
-      const fileResponse = await fetch(attachment.url, {
-        method: 'GET',
-        headers: {
-          'Authorization': authHeader,
-          'Accept': '*/*'
-        }
-      });
+      // Download the file using client's authenticated download method
+      const fileResponse = await client.downloadFileAttachment(attachment.url);
 
       if (!fileResponse.ok) {
         return {

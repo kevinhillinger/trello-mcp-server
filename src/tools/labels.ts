@@ -1,6 +1,6 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import {
   validateCreateLabel,
   validateGetLabel,
@@ -17,14 +17,6 @@ const createLabel: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         name: {
           type: 'string',
           description: 'Name of the label (e.g., "Priority", "Bug", "Feature")'
@@ -40,15 +32,13 @@ const createLabel: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'name', 'color', 'idBoard']
+      required: ['name', 'color', 'idBoard']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const labelData = validateCreateLabel(args);
-      const { apiKey, token, ...createData } = labelData;
+      const createData = validateCreateLabel(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.createLabel(createData);
       const label = response.data;
 
@@ -99,14 +89,6 @@ const getLabel: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         labelId: {
           type: 'string',
           description: 'ID of the label to retrieve (you can get this from board details)',
@@ -117,14 +99,13 @@ const getLabel: ExecutableTool = {
           description: 'Comma-separated list of fields to return (e.g., "name,color,idBoard"). If omitted, all fields are returned'
         }
       },
-      required: ['apiKey', 'token', 'labelId']
+      required: ['labelId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, labelId, fields } = validateGetLabel(args);
+      const { labelId, fields } = validateGetLabel(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.getLabel(labelId, fields);
       const label = response.data;
 
@@ -175,14 +156,6 @@ const updateLabel: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         labelId: {
           type: 'string',
           description: 'ID of the label to update (you can get this from board details)',
@@ -198,15 +171,14 @@ const updateLabel: ExecutableTool = {
           description: 'New color for the label. Valid values: yellow, purple, blue, red, green, orange, black, sky, pink, lime, or null for no color'
         }
       },
-      required: ['apiKey', 'token', 'labelId']
+      required: ['labelId']
     }
   },
   callback: async (args: unknown) => {
     try {
       const updateData = validateUpdateLabel(args);
-      const { apiKey, token, labelId, ...updates } = updateData;
+      const { labelId, ...updates } = updateData;
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.updateLabel(labelId, updates);
       const label = response.data;
 
@@ -257,28 +229,19 @@ const deleteLabel: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         labelId: {
           type: 'string',
           description: 'ID of the label to delete (you can get this from board details)',
           pattern: '^[a-f0-9]{24}$'
         }
       },
-      required: ['apiKey', 'token', 'labelId']
+      required: ['labelId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, labelId } = validateDeleteLabel(args);
+      const { labelId } = validateDeleteLabel(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.deleteLabel(labelId);
 
       const result = {
@@ -322,14 +285,6 @@ const updateLabelField: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         labelId: {
           type: 'string',
           description: 'ID of the label to update (you can get this from board details)',
@@ -345,15 +300,13 @@ const updateLabelField: ExecutableTool = {
           description: 'The new value for the field. For color field, valid values are: yellow, purple, blue, red, green, orange, black, sky, pink, lime'
         }
       },
-      required: ['apiKey', 'token', 'labelId', 'field', 'value']
+      required: ['labelId', 'field', 'value']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const updateData = validateUpdateLabelField(args);
-      const { apiKey, token, labelId, field, value } = updateData;
+      const { labelId, field, value } = validateUpdateLabelField(args);
 
-      const client = new TrelloClient({ apiKey, token });
       const response = await client.updateLabelField(labelId, { field, value });
       const label = response.data;
 

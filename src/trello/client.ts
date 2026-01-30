@@ -805,4 +805,29 @@ export class TrelloClient {
       `Update label ${labelId} field ${fieldData.field}`
     );
   }
+
+  async downloadFileAttachment(url: string): Promise<Response> {
+    const authHeader = `OAuth oauth_consumer_key="${this.credentials.apiKey}", oauth_token="${this.credentials.token}"`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': authHeader,
+        'Accept': '*/*'
+      }
+    });
+
+    return response;
+  }
+}
+
+
+export let client: TrelloClient;
+
+export function createTrelloClient(credentials: TrelloCredentials): TrelloClient {
+  if (client) {
+    return client;
+  }
+  client = new TrelloClient(credentials);
+  return client;
 }

@@ -1,6 +1,6 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import {
   validateListBoards,
   validateGetBoard,
@@ -8,10 +8,8 @@ import {
   formatValidationError
 } from '../utils/validation.js';
 
-const validateGetBoardCards = (args: unknown) => {
+const validateGetCardsOnBoard = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     boardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid board ID format'),
     attachments: z.string().optional(),
     members: z.string().optional(),
@@ -28,14 +26,6 @@ const listBoards: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         filter: {
           type: 'string',
           enum: ['all', 'open', 'closed'],
@@ -43,14 +33,13 @@ const listBoards: ExecutableTool = {
           default: 'open'
         }
       },
-      required: ['apiKey', 'token']
+      required: []
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, filter } = validateListBoards(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { filter } = validateListBoards(args);
+      
       const response = await client.getMyBoards(filter);
       const boards = response.data;
 
@@ -103,14 +92,6 @@ const getBoardDetails: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         boardId: {
           type: 'string',
           description: 'The ID of the board to retrieve (you can get this from list_boards)',
@@ -122,14 +103,13 @@ const getBoardDetails: ExecutableTool = {
           default: false
         }
       },
-      required: ['apiKey', 'token', 'boardId']
+      required: ['boardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, boardId, includeDetails } = validateGetBoard(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { boardId, includeDetails } = validateGetBoard(args);
+      
       const response = await client.getBoard(boardId, includeDetails);
       const board = response.data;
 
@@ -205,14 +185,6 @@ const getBoardLists: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         boardId: {
           type: 'string',
           description: 'The ID of the board to get lists from (you can get this from list_boards)',
@@ -225,14 +197,13 @@ const getBoardLists: ExecutableTool = {
           default: 'open'
         }
       },
-      required: ['apiKey', 'token', 'boardId']
+      required: ['boardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, boardId, filter } = validateGetBoardLists(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { boardId, filter } = validateGetBoardLists(args);
+      
       const response = await client.getBoardLists(boardId, filter);
       const lists = response.data;
 
@@ -277,21 +248,13 @@ const getBoardLists: ExecutableTool = {
   }
 };
 
-const getBoardCards: ExecutableTool = {
+const getCardsOnBoard: ExecutableTool = {
   definition: {
-    name: 'getBoardCards',
+    name: 'getCardsOnBoard',
     description: 'Get all cards from a Trello board with optional filtering and detailed information like attachments and members.',
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         boardId: {
           type: 'string',
           description: 'ID of the board to get cards from (you can get this from list_boards)',
@@ -316,14 +279,13 @@ const getBoardCards: ExecutableTool = {
           default: 'open'
         }
       },
-      required: ['apiKey', 'token', 'boardId']
+      required: ['boardId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, boardId, attachments, members, filter } = validateGetBoardCards(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { boardId, attachments, members, filter } = validateGetCardsOnBoard(args);
+      
       const response = await client.getBoardCards(boardId, {
         ...(attachments && { attachments }),
         ...(members && { members }),
@@ -398,4 +360,4 @@ export const boardTools = new Map<string, ExecutableTool>();
 boardTools.set(listBoards.definition.name, listBoards);
 boardTools.set(getBoardDetails.definition.name, getBoardDetails);
 boardTools.set(getBoardLists.definition.name, getBoardLists);
-boardTools.set(getBoardCards.definition.name, getBoardCards);
+boardTools.set(getCardsOnBoard.definition.name, getCardsOnBoard);

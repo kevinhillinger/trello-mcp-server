@@ -4,9 +4,8 @@
 import './utils/logger.js';
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { createMCPServer } from './server.js';
-import { invokeToolCallback } from './tools/index.js';
+import { TrelloServer } from './server.js';
+import type { TrelloCredentials } from './types/trello.js';
 
 // Desktop-specific: Check for local credentials
 const TRELLO_API_KEY = process.env.TRELLO_API_KEY;
@@ -19,23 +18,14 @@ if (!TRELLO_API_KEY || !TRELLO_TOKEN) {
   process.exit(1);
 }
 
-// Create the MCP server using the shared factory
-const mcpServer = createMCPServer();
+// Create credentials from environment variables
+const credentials: TrelloCredentials = {
+  apiKey: TRELLO_API_KEY,
+  token: TRELLO_TOKEN
+};
 
-// Override the tool handler to inject credentials from environment variables
-mcpServer.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-  
-  // Inject credentials into arguments
-  const argsWithCredentials = {
-    ...args,
-    apiKey: TRELLO_API_KEY,
-    token: TRELLO_TOKEN
-  };
-  
-  // Use the shared handler with injected credentials
-  return await invokeToolCallback(name, argsWithCredentials);
-});
+// Create the Trello MCP server with credentials
+const trelloServer = new TrelloServer(credentials);
 
 // Error handler
 process.on('uncaughtException', (_error) => {
@@ -49,7 +39,7 @@ process.on('unhandledRejection', (_reason) => {
 // Start the server
 async function main() {
   const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
+  await trelloServer.connect(transport);
   
   // Server is running - no output needed
 }

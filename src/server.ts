@@ -10,89 +10,101 @@ import {
 import { tools, invokeToolCallback } from './tools/index.js';
 import { handleAttachmentResource, listAttachmentResources, getResourceType } from './resources/index.js';
 import { TrelloResourceType } from './types/mcp.js';
+import type { TrelloCredentials } from './types/trello.js';
+import { createTrelloClient } from './trello/client.js';
 
-export function createMCPServer() {
-  const mcpServer = new McpServer(
-    {
-      name: 'trello-mcp-server',
-      version: '1.0.0',
-    },
-    {
-      capabilities: {
-        tools: {},
-        resources: {},
-        prompts: {}
+export class TrelloServer {
+  static serverInfo = {
+    name: 'trello-mcp-server',
+    version: '1.2.0',
+  };
+
+  private mcpServer: McpServer;
+  private credentials: TrelloCredentials;
+
+  constructor(credentials: TrelloCredentials) {
+    this.credentials = credentials;
+    this.mcpServer = new McpServer(
+      TrelloServer.serverInfo,
+      {
+        capabilities: {
+          tools: {},
+          resources: {},
+          prompts: {}
+        }
       }
-    }
-  );
+    );
 
-  // Get underlying server for advanced request handlers
-  const server = mcpServer.server;
+    createTrelloClient(this.credentials);
+    this.setupHandlers();
+  }
 
-  // Handle MCP initialization
-  server.setRequestHandler(InitializeRequestSchema, async (_request) => {
-    return {
-      protocolVersion: '2024-11-05',
-      capabilities: {
-        tools: {},
-        resources: {},
-        prompts: {},
-      },
-      serverInfo: {
-        name: 'trello-mcp-server',
-        version: '1.0.0',
-      },
-    };
-  });
+  private setupHandlers() {
+    const server = this.mcpServer.server;
 
-  // Handle list tools request
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return { tools };
-  });
+    server.setRequestHandler(InitializeRequestSchema, async (_request) => {
+      return {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {},
+          resources: {},
+          prompts: {},
+        },
+        serverInfo: TrelloServer.serverInfo,
+      };
+    });
 
-  // Handle list resources request (required by MCP spec)
-  server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    return {
-      resources: listAttachmentResources(),
-    };
-  });
+    server.setRequestHandler(ListToolsRequestSchema, async () => {
+      return { tools };
+    });
 
-  // Handle resource read requests - download attachment files on-demand
-  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-    const uri = request.params.uri;
+    server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      return {
+        resources: listAttachmentResources(),
+      };
+    });
 
-    // Get credentials from environment variables
-    const apiKey = process.env.TRELLO_API_KEY;
-    const token = process.env.TRELLO_TOKEN;
+    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const uri = request.params.uri;
 
-    if (!apiKey || !token) {
-      throw new Error('TRELLO_API_KEY and TRELLO_TOKEN environment variables must be set');
-    }
+      try {
+        const type = getResourceType(uri);
 
-    try {
-      const type = getResourceType(uri);
+        if (type === TrelloResourceType.fileAttachment) {
+          return await handleAttachmentResource(uri, this.credentials.apiKey, this.credentials.token);
+        }
 
-      if (type === TrelloResourceType.fileAttachment) {
-        return await handleAttachmentResource(uri, apiKey, token);
+        throw new Error(`Unsupported resource type: ${type}`);
+      } catch (error) {
+        throw new Error(`Failed to read resource: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
+    });
 
-      throw new Error(`Unsupported resource type: ${type}`);
-    } catch (error) {
-      throw new Error(`Failed to read resource: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  });
+    server.setRequestHandler(ListPromptsRequestSchema, async () => {
+      return {
+        prompts: [],
+      };
+    });
 
-  // Handle list prompts request (required by MCP spec)
-  server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    return {
-      prompts: [],
-    };
-  });
+    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
-    return await invokeToolCallback(name, args);
-  });
+      // Inject credentials into arguments
+      const argsWithCredentials = {
+        ...args,
+        apiKey: this.credentials.apiKey,
+        token: this.credentials.token
+      };
 
-  return mcpServer;
+      return await invokeToolCallback(name, argsWithCredentials);
+    });
+  }
+
+  async connect(transport: Parameters<McpServer['connect']>[0]) {
+    await this.mcpServer.connect(transport);
+  }
+
+  get server() {
+    return this.mcpServer;
+  }
 }

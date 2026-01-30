@@ -1,12 +1,10 @@
 import { type ExecutableTool } from '../types/mcp.js';
 import { z } from 'zod';
-import { TrelloClient } from '../trello/client.js';
+import { client } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
 
 const validateGetUserBoards = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     filter: z.enum(['all', 'open', 'closed']).optional()
   });
 
@@ -15,8 +13,6 @@ const validateGetUserBoards = (args: unknown) => {
 
 const validateGetMember = (args: unknown) => {
   const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
     memberId: z.string().min(1, 'Member ID is required'),
     fields: z.array(z.string()).optional(),
     boards: z.string().optional(),
@@ -33,14 +29,6 @@ const getUserBoards: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         filter: {
           type: 'string',
           enum: ['all', 'open', 'closed'],
@@ -48,14 +36,13 @@ const getUserBoards: ExecutableTool = {
           default: 'open'
         }
       },
-      required: ['apiKey', 'token']
+      required: []
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, filter } = validateGetUserBoards(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { filter } = validateGetUserBoards(args);
+      
       const response = await client.getCurrentUser();
       const user = response.data;
 
@@ -127,14 +114,6 @@ const getMember: ExecutableTool = {
     inputSchema: {
       type: 'object',
       properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
         memberId: {
           type: 'string',
           description: 'ID or username of the member to retrieve (use "me" for current user)',
@@ -158,14 +137,13 @@ const getMember: ExecutableTool = {
           default: 'all'
         }
       },
-      required: ['apiKey', 'token', 'memberId']
+      required: ['memberId']
     }
   },
   callback: async (args: unknown) => {
     try {
-      const { apiKey, token, memberId, fields, boards, organizations } = validateGetMember(args);
-      const client = new TrelloClient({ apiKey, token });
-
+      const { memberId, fields, boards, organizations } = validateGetMember(args);
+      
       const response = await client.getMember(memberId, {
         ...(fields && { fields }),
         ...(boards && { boards }),
