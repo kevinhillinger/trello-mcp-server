@@ -24,7 +24,7 @@ const allToolMaps = [
 
 // Build the tools array from all ExecutableTool maps
 export const tools: Tool[] = allToolMaps.flatMap(toolMap =>
-  Array.from(toolMap.values()).map(executableTool => executableTool.tool)
+  Array.from(toolMap.values()).map(executableTool => executableTool.definition)
 );
 
 // Build the callbacks map from all ExecutableTool maps

@@ -22,7 +22,7 @@ const validateGetBoardCards = (args: unknown) => {
 };
 
 const listBoards: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'listBoards',
     description: 'List all Trello boards accessible to the user. Use this to see all boards you have access to, or filter by status.',
     inputSchema: {
@@ -46,7 +46,7 @@ const listBoards: ExecutableTool = {
       required: ['apiKey', 'token']
     }
   },
-  callback: async function handleListBoards(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, filter } = validateListBoards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -97,7 +97,7 @@ const listBoards: ExecutableTool = {
 };
 
 const getBoardDetails: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getBoardDetails',
     description: 'Get detailed information about a specific Trello board, including its lists and cards. Useful for understanding board structure and content.',
     inputSchema: {
@@ -125,7 +125,7 @@ const getBoardDetails: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function handleGetBoardDetails(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, boardId, includeDetails } = validateGetBoard(args);
       const client = new TrelloClient({ apiKey, token });
@@ -199,7 +199,7 @@ const getBoardDetails: ExecutableTool = {
 };
 
 const getBoardLists: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getBoardLists',
     description: 'Get all lists in a specific Trello board. Use this to see the workflow columns (like "To Do", "In Progress", "Done") in a board.',
     inputSchema: {
@@ -228,7 +228,7 @@ const getBoardLists: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function handleGetLists(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, boardId, filter } = validateGetBoardLists(args);
       const client = new TrelloClient({ apiKey, token });
@@ -278,7 +278,7 @@ const getBoardLists: ExecutableTool = {
 };
 
 const getBoardCards: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getBoardCards',
     description: 'Get all cards from a Trello board with optional filtering and detailed information like attachments and members.',
     inputSchema: {
@@ -319,7 +319,7 @@ const getBoardCards: ExecutableTool = {
       required: ['apiKey', 'token', 'boardId']
     }
   },
-  callback: async function getBoardCardsCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, boardId, attachments, members, filter } = validateGetBoardCards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -395,7 +395,7 @@ const getBoardCards: ExecutableTool = {
 };
 
 export const boardTools = new Map<string, ExecutableTool>();
-boardTools.set(listBoards.tool.name, listBoards);
-boardTools.set(getBoardDetails.tool.name, getBoardDetails);
-boardTools.set(getBoardLists.tool.name, getBoardLists);
-boardTools.set(getBoardCards.tool.name, getBoardCards);
+boardTools.set(listBoards.definition.name, listBoards);
+boardTools.set(getBoardDetails.definition.name, getBoardDetails);
+boardTools.set(getBoardLists.definition.name, getBoardLists);
+boardTools.set(getBoardCards.definition.name, getBoardCards);

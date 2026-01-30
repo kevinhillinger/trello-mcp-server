@@ -34,7 +34,7 @@ const validateSearch = (args: unknown) => {
 };
 
 const search: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'search',
     description: 'Search across Trello content (boards, cards, members, organizations). Use this to find specific items by keywords or phrases.',
     inputSchema: {
@@ -165,7 +165,7 @@ const search: ExecutableTool = {
       required: ['apiKey', 'token', 'query']
     }
   },
-  callback: async function searchCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const validated = validateSearch(args);
       const { apiKey, token, query, ...options } = validated;
@@ -259,4 +259,4 @@ const search: ExecutableTool = {
 };
 
 export const searchTools = new Map<string, ExecutableTool>();
-searchTools.set(search.tool.name, search);
+searchTools.set(search.definition.name, search);

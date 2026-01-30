@@ -11,7 +11,7 @@ import {
 } from '../utils/validation.js';
 
 const createLabel: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'createLabel',
     description: 'Create a new label on a Trello board. Use this to add categorization and visual organization to your cards.',
     inputSchema: {
@@ -43,7 +43,7 @@ const createLabel: ExecutableTool = {
       required: ['apiKey', 'token', 'name', 'color', 'idBoard']
     }
   },
-  callback: async function handleCreateLabel(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const labelData = validateCreateLabel(args);
       const { apiKey, token, ...createData } = labelData;
@@ -93,7 +93,7 @@ const createLabel: ExecutableTool = {
 };
 
 const getLabel: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getLabel',
     description: 'Get detailed information about a specific Trello label, including its name, color, and usage.',
     inputSchema: {
@@ -120,7 +120,7 @@ const getLabel: ExecutableTool = {
       required: ['apiKey', 'token', 'labelId']
     }
   },
-  callback: async function handleGetLabel(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, labelId, fields } = validateGetLabel(args);
 
@@ -169,7 +169,7 @@ const getLabel: ExecutableTool = {
 };
 
 const updateLabel: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'updateLabel',
     description: 'Update properties of an existing Trello label. Use this to change the label\'s name or color.',
     inputSchema: {
@@ -201,7 +201,7 @@ const updateLabel: ExecutableTool = {
       required: ['apiKey', 'token', 'labelId']
     }
   },
-  callback: async function handleUpdateLabel(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const updateData = validateUpdateLabel(args);
       const { apiKey, token, labelId, ...updates } = updateData;
@@ -251,7 +251,7 @@ const updateLabel: ExecutableTool = {
 };
 
 const deleteLabel: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'deleteLabel',
     description: 'Delete a label from a Trello board. Use this to remove unused or obsolete labels. Warning: This will remove the label from all cards that use it.',
     inputSchema: {
@@ -274,7 +274,7 @@ const deleteLabel: ExecutableTool = {
       required: ['apiKey', 'token', 'labelId']
     }
   },
-  callback: async function handleDeleteLabel(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, labelId } = validateDeleteLabel(args);
 
@@ -316,7 +316,7 @@ const deleteLabel: ExecutableTool = {
 };
 
 const updateLabelField: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'updateLabelField',
     description: 'Update a specific field on a label. Use this for targeted updates to either the name or color field.',
     inputSchema: {
@@ -348,7 +348,7 @@ const updateLabelField: ExecutableTool = {
       required: ['apiKey', 'token', 'labelId', 'field', 'value']
     }
   },
-  callback: async function handleUpdateLabelField(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const updateData = validateUpdateLabelField(args);
       const { apiKey, token, labelId, field, value } = updateData;
@@ -398,8 +398,8 @@ const updateLabelField: ExecutableTool = {
 };
 
 export const labelTools = new Map<string, ExecutableTool>();
-labelTools.set(createLabel.tool.name, createLabel);
-labelTools.set(getLabel.tool.name, getLabel);
-labelTools.set(updateLabel.tool.name, updateLabel);
-labelTools.set(deleteLabel.tool.name, deleteLabel);
-labelTools.set(updateLabelField.tool.name, updateLabelField);
+labelTools.set(createLabel.definition.name, createLabel);
+labelTools.set(getLabel.definition.name, getLabel);
+labelTools.set(updateLabel.definition.name, updateLabel);
+labelTools.set(deleteLabel.definition.name, deleteLabel);
+labelTools.set(updateLabelField.definition.name, updateLabelField);

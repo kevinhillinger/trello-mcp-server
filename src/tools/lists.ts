@@ -39,7 +39,7 @@ const validateAddComment = (args: unknown) => {
 };
 
 const getListCards: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getListCards',
     description: 'Get all cards in a specific Trello list. Use this to see all tasks/items in a workflow column.',
     inputSchema: {
@@ -73,7 +73,7 @@ const getListCards: ExecutableTool = {
       required: ['apiKey', 'token', 'listId']
     }
   },
-  callback: async function getListCardsCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, listId, filter, fields } = validateGetListCards(args);
       const client = new TrelloClient({ apiKey, token });
@@ -142,7 +142,7 @@ const getListCards: ExecutableTool = {
 };
 
 const createList: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'createList',
     description: 'Create a new list in a Trello board. Use this to add workflow columns like "To Do", "In Progress", or "Done".',
     inputSchema: {
@@ -178,7 +178,7 @@ const createList: ExecutableTool = {
       required: ['apiKey', 'token', 'name', 'idBoard']
     }
   },
-  callback: async function createListCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const listData = validateCreateList(args);
       const { apiKey, token, ...createData } = listData;
@@ -233,7 +233,7 @@ const createList: ExecutableTool = {
 };
 
 const addComment: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'addComment',
     description: 'Add a comment to a Trello card. Use this to add notes, updates, or discussions to cards.',
     inputSchema: {
@@ -261,7 +261,7 @@ const addComment: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'text']
     }
   },
-  callback: async function addCommentCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, text } = validateAddComment(args);
       const client = new TrelloClient({ apiKey, token });
@@ -320,6 +320,6 @@ const addComment: ExecutableTool = {
 };
 
 export const listTools = new Map<string, ExecutableTool>();
-listTools.set(getListCards.tool.name, getListCards);
-listTools.set(createList.tool.name, createList);
-listTools.set(addComment.tool.name, addComment);
+listTools.set(getListCards.definition.name, getListCards);
+listTools.set(createList.definition.name, createList);
+listTools.set(addComment.definition.name, addComment);

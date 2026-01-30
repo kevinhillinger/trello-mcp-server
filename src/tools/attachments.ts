@@ -37,7 +37,7 @@ const validateDownloadFileAttachment = (args: unknown) => {
 };
 
 const getAttachmentsOnCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getAttachmentsOnCard',
     description: 'Get all attachments (files, links) for a specific Trello card. For file attachments (isUpload=true), the url property contains a trello:// resource URI that can be used immediately with the downloadFileAttachment tool to download the file to a local path.',
     inputSchema: {
@@ -65,7 +65,7 @@ const getAttachmentsOnCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function getAttachmentsOnCardCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, fields } = validateGetAttachmentsOnCard(args);
       const client = new TrelloClient({ apiKey, token });
@@ -138,7 +138,7 @@ const getAttachmentsOnCard: ExecutableTool = {
 };
 
 const getAttachmentOnCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getAttachmentOnCard',
     description: 'Get a specific attachment from a Trello card. If the attachment is a file (isUpload=true), the url property contains a trello:// resource URI that can be used with the downloadFileAttachment tool to download the file to a local path.',
     inputSchema: {
@@ -166,7 +166,7 @@ const getAttachmentOnCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'attachmentId']
     }
   },
-  callback: async function getAttachmentOnCardCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, attachmentId } = validateGetAttachmentOnCard(args);
       const client = new TrelloClient({ apiKey, token });
@@ -228,7 +228,7 @@ const getAttachmentOnCard: ExecutableTool = {
 };
 
 const downloadFileAttachment: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'downloadFileAttachment',
     description: 'Download a Trello card attachment file to a specified local path. Accepts a trello:// resource URI and downloads the file content to the given file path.',
     inputSchema: {
@@ -255,7 +255,7 @@ const downloadFileAttachment: ExecutableTool = {
       required: ['apiKey', 'token', 'resourceUri', 'filePath']
     }
   },
-  callback: async function downloadFileAttachmentCallback(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, resourceUri, filePath } = validateDownloadFileAttachment(args);
 
@@ -359,6 +359,6 @@ const downloadFileAttachment: ExecutableTool = {
 };
 
 export const attachmentTools = new Map<string, ExecutableTool>();
-attachmentTools.set(getAttachmentsOnCard.tool.name, getAttachmentsOnCard);
-attachmentTools.set(getAttachmentOnCard.tool.name, getAttachmentOnCard);
-attachmentTools.set(downloadFileAttachment.tool.name, downloadFileAttachment);
+attachmentTools.set(getAttachmentsOnCard.definition.name, getAttachmentsOnCard);
+attachmentTools.set(getAttachmentOnCard.definition.name, getAttachmentOnCard);
+attachmentTools.set(downloadFileAttachment.definition.name, downloadFileAttachment);

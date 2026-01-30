@@ -1,13 +1,13 @@
-import type { Tool, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
+import type { Tool, ReadResourceResult, CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
-// Simple callback type for tool handlers
-export type ToolCallback = (args: unknown) => Promise<{
-  content: Array<{ type: 'text'; text: string }>;
-  isError?: boolean;
-}>;
+/**
+ * Custom callback type for our tool implementations.
+ * Takes args as input and returns a CallToolResult.
+ */
+export type ToolCallback = (args: unknown) => Promise<CallToolResult>;
 
 export interface ExecutableTool {
-  tool: Tool,
+  definition: Tool,
   callback: ToolCallback
 }
 

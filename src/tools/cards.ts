@@ -20,8 +20,20 @@ import {
   formatValidationError
 } from '../utils/validation.js';
 
+const validateGetCardActions = (args: unknown) => {
+  const schema = z.object({
+    apiKey: z.string().min(1, 'API key is required'),
+    token: z.string().min(1, 'Token is required'),
+    cardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid card ID format'),
+    filter: z.string().optional(),
+    limit: z.number().min(1).max(1000).optional()
+  });
+
+  return schema.parse(args);
+};
+
 const createCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'createCard',
     description: 'Create a new card in a Trello list. Use this to add tasks, ideas, or items to your workflow.',
     inputSchema: {
@@ -80,7 +92,7 @@ const createCard: ExecutableTool = {
       required: ['apiKey', 'token', 'name', 'idList']
     }
   },
-  callback: async function handleCreateCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const cardData = validateCreateCard(args);
       const { apiKey, token, ...createData } = cardData;
@@ -144,7 +156,7 @@ const createCard: ExecutableTool = {
 };
 
 const updateCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'updateCard',
     description: 'Update properties of an existing Trello card. Use this to change card details like name, description, due date, or status.',
     inputSchema: {
@@ -200,7 +212,7 @@ const updateCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleUpdateCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const updateData = validateUpdateCard(args);
       const { apiKey, token, cardId, ...updates } = updateData;
@@ -260,7 +272,7 @@ const updateCard: ExecutableTool = {
 };
 
 const moveCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'moveCard',
     description: 'Move a card to a different list. Use this to change a card\'s workflow status (e.g., from "To Do" to "In Progress").',
     inputSchema: {
@@ -295,7 +307,7 @@ const moveCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'idList']
     }
   },
-  callback: async function handleMoveCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const moveData = validateMoveCard(args);
       const { apiKey, token, cardId, ...moveParams } = moveData;
@@ -346,7 +358,7 @@ const moveCard: ExecutableTool = {
 };
 
 const getCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'getCard',
     description: 'Get detailed information about a specific Trello card, including its content, status, members, and attachments.',
     inputSchema: {
@@ -374,7 +386,7 @@ const getCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleGetCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, includeDetails } = validateGetCard(args);
 
@@ -460,7 +472,7 @@ const getCard: ExecutableTool = {
 };
 
 const deleteCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'deleteCard',
     description: 'Permanently delete a Trello card. This action cannot be undone. Use update_card with closed=true to archive instead.',
     inputSchema: {
@@ -483,7 +495,7 @@ const deleteCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleDeleteCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId } = validateDeleteCard(args);
 
@@ -526,7 +538,7 @@ const deleteCard: ExecutableTool = {
 };
 
 const archiveCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'archiveCard',
     description: 'Archive or unarchive a Trello card. Archived cards are hidden from the board but can be restored.',
     inputSchema: {
@@ -554,7 +566,7 @@ const archiveCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleArchiveCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, archive } = validateArchiveCard(args);
 
@@ -603,7 +615,7 @@ const archiveCard: ExecutableTool = {
 };
 
 const addAttachmentToCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'addAttachmentToCard',
     description: 'Add an attachment to a Trello card. Can attach either a URL or upload a file. Use this to link external resources, documents, or upload files directly.',
     inputSchema: {
@@ -652,7 +664,7 @@ const addAttachmentToCard: ExecutableTool = {
       ]
     }
   },
-  callback: async function handleAddAttachmentToCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, url, file, name, mimeType, setCover } = validateAddAttachmentToCard(args);
 
@@ -735,7 +747,7 @@ const addAttachmentToCard: ExecutableTool = {
 };
 
 const deleteAttachmentFromCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'deleteAttachmentFromCard',
     description: 'Remove an attachment from a Trello card.',
     inputSchema: {
@@ -763,7 +775,7 @@ const deleteAttachmentFromCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'attachmentId']
     }
   },
-  callback: async function handleDeleteAttachmentFromCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, attachmentId } = validateDeleteAttachmentFromCard(args);
 
@@ -807,7 +819,7 @@ const deleteAttachmentFromCard: ExecutableTool = {
 };
 
 const createChecklistOnCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'createChecklistOnCard',
     description: 'Create a new checklist on a Trello card. Checklists help track subtasks and progress.',
     inputSchema: {
@@ -846,7 +858,7 @@ const createChecklistOnCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId']
     }
   },
-  callback: async function handleCreateChecklistOnCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, name, idChecklistSource, pos } = validateCreateChecklistOnCard(args);
 
@@ -900,7 +912,7 @@ const createChecklistOnCard: ExecutableTool = {
 };
 
 const updateCheckItem: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'updateCheckItem',
     description: 'Update a checklist item on a Trello card. Use this to mark items complete/incomplete or rename them.',
     inputSchema: {
@@ -944,7 +956,7 @@ const updateCheckItem: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'checkItemId']
     }
   },
-  callback: async function handleUpdateCheckItem(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, checkItemId, name, state, pos } = validateUpdateCheckItem(args);
 
@@ -996,7 +1008,7 @@ const updateCheckItem: ExecutableTool = {
 };
 
 const deleteCheckItem: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'deleteCheckItem',
     description: 'Delete a checklist item from a Trello card.',
     inputSchema: {
@@ -1024,7 +1036,7 @@ const deleteCheckItem: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'checkItemId']
     }
   },
-  callback: async function handleDeleteCheckItem(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, checkItemId } = validateDeleteCheckItem(args);
 
@@ -1068,7 +1080,7 @@ const deleteCheckItem: ExecutableTool = {
 };
 
 const addLabelToCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'addLabelToCard',
     description: 'Add a label to a Trello card for categorization. Labels help organize cards by type, priority, or category.',
     inputSchema: {
@@ -1096,7 +1108,7 @@ const addLabelToCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'labelId']
     }
   },
-  callback: async function handleAddLabelToCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, labelId } = validateAddLabelToCard(args);
 
@@ -1140,7 +1152,7 @@ const addLabelToCard: ExecutableTool = {
 };
 
 const removeLabelFromCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'removeLabelFromCard',
     description: 'Remove a label from a Trello card.',
     inputSchema: {
@@ -1168,7 +1180,7 @@ const removeLabelFromCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'labelId']
     }
   },
-  callback: async function handleRemoveLabelFromCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, labelId } = validateRemoveLabelFromCard(args);
 
@@ -1212,7 +1224,7 @@ const removeLabelFromCard: ExecutableTool = {
 };
 
 const addMemberToCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'addMemberToCard',
     description: 'Assign a member to a Trello card. Use this to assign responsibility for a task.',
     inputSchema: {
@@ -1240,7 +1252,7 @@ const addMemberToCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'memberId']
     }
   },
-  callback: async function handleAddMemberToCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, memberId } = validateAddMemberToCard(args);
 
@@ -1284,7 +1296,7 @@ const addMemberToCard: ExecutableTool = {
 };
 
 const removeMemberFromCard: ExecutableTool = {
-  tool: {
+  definition: {
     name: 'removeMemberFromCard',
     description: 'Remove a member from a Trello card.',
     inputSchema: {
@@ -1312,7 +1324,7 @@ const removeMemberFromCard: ExecutableTool = {
       required: ['apiKey', 'token', 'cardId', 'memberId']
     }
   },
-  callback: async function handleRemoveMemberFromCard(args: unknown) {
+  callback: async (args: unknown) => {
     try {
       const { apiKey, token, cardId, memberId } = validateRemoveMemberFromCard(args);
 
@@ -1355,19 +1367,124 @@ const removeMemberFromCard: ExecutableTool = {
   }
 };
 
+const getCardActions: ExecutableTool = {
+  definition: {
+    name: 'getCardActions',
+    description: 'Get activity history and comments for a specific Trello card. Useful for tracking changes and discussions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        apiKey: {
+          type: 'string',
+          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
+        },
+        token: {
+          type: 'string',
+          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
+        },
+        cardId: {
+          type: 'string',
+          description: 'ID of the card to get actions for',
+          pattern: '^[a-f0-9]{24}$'
+        },
+        filter: {
+          type: 'string',
+          enum: ['all', 'commentCard', 'updateCard', 'createCard'],
+          description: 'Filter actions by type: "commentCard" for comments only, "updateCard" for updates',
+          default: 'commentCard'
+        },
+        limit: {
+          type: 'number',
+          minimum: 1,
+          maximum: 1000,
+          description: 'Maximum number of actions to return',
+          default: 50
+        }
+      },
+      required: ['apiKey', 'token', 'cardId']
+    }
+  },
+  callback: async (args: unknown) => {
+    try {
+      const { apiKey, token, cardId, filter, limit } = validateGetCardActions(args);
+      const client = new TrelloClient({ apiKey, token });
+
+      const response = await client.getCardActions(cardId, {
+        ...(filter && { filter }),
+        ...(limit !== undefined && { limit })
+      });
+      const actions = response.data;
+
+      const result = {
+        summary: `Found ${actions.length} action(s) for card`,
+        cardId,
+        actions: actions.map(action => ({
+          id: action.id,
+          type: action.type,
+          date: action.date,
+          memberCreator: action.memberCreator ? {
+            id: action.memberCreator.id,
+            fullName: action.memberCreator.fullName,
+            username: action.memberCreator.username
+          } : null,
+          data: {
+            text: action.data?.text,
+            old: action.data?.old,
+            card: action.data?.card ? {
+              id: action.data.card.id,
+              name: action.data.card.name
+            } : null,
+            list: action.data?.list ? {
+              id: action.data.list.id,
+              name: action.data.list.name
+            } : null
+          }
+        })),
+        rateLimit: response.rateLimit
+      };
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      const errorMessage = error instanceof z.ZodError
+        ? formatValidationError(error)
+        : error instanceof Error
+          ? error.message
+          : 'Unknown error occurred';
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: `Error getting card actions: ${errorMessage}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+};
+
 export const cardTools = new Map<string, ExecutableTool>();
-cardTools.set(createCard.tool.name, createCard);
-cardTools.set(updateCard.tool.name, updateCard);
-cardTools.set(moveCard.tool.name, moveCard);
-cardTools.set(getCard.tool.name, getCard);
-cardTools.set(deleteCard.tool.name, deleteCard);
-cardTools.set(archiveCard.tool.name, archiveCard);
-cardTools.set(addAttachmentToCard.tool.name, addAttachmentToCard);
-cardTools.set(deleteAttachmentFromCard.tool.name, deleteAttachmentFromCard);
-cardTools.set(createChecklistOnCard.tool.name, createChecklistOnCard);
-cardTools.set(updateCheckItem.tool.name, updateCheckItem);
-cardTools.set(deleteCheckItem.tool.name, deleteCheckItem);
-cardTools.set(addLabelToCard.tool.name, addLabelToCard);
-cardTools.set(removeLabelFromCard.tool.name, removeLabelFromCard);
-cardTools.set(addMemberToCard.tool.name, addMemberToCard);
-cardTools.set(removeMemberFromCard.tool.name, removeMemberFromCard);
+cardTools.set(createCard.definition.name, createCard);
+cardTools.set(updateCard.definition.name, updateCard);
+cardTools.set(moveCard.definition.name, moveCard);
+cardTools.set(getCard.definition.name, getCard);
+cardTools.set(deleteCard.definition.name, deleteCard);
+cardTools.set(archiveCard.definition.name, archiveCard);
+cardTools.set(addAttachmentToCard.definition.name, addAttachmentToCard);
+cardTools.set(deleteAttachmentFromCard.definition.name, deleteAttachmentFromCard);
+cardTools.set(createChecklistOnCard.definition.name, createChecklistOnCard);
+cardTools.set(updateCheckItem.definition.name, updateCheckItem);
+cardTools.set(deleteCheckItem.definition.name, deleteCheckItem);
+cardTools.set(addLabelToCard.definition.name, addLabelToCard);
+cardTools.set(removeLabelFromCard.definition.name, removeLabelFromCard);
+cardTools.set(addMemberToCard.definition.name, addMemberToCard);
+cardTools.set(removeMemberFromCard.definition.name, removeMemberFromCard);
+cardTools.set(getCardActions.definition.name, getCardActions);
