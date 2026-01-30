@@ -9,6 +9,7 @@ import { searchTools } from './search.js';
 import { labelTools } from './labels.js';
 import { advancedTools } from './advanced.js';
 import { attachmentTools } from './attachments.js';
+import { checklistTools } from './checklists.js';
 
 // Combine all tool maps
 const allToolMaps = [
@@ -19,7 +20,8 @@ const allToolMaps = [
   searchTools,
   labelTools,
   advancedTools,
-  attachmentTools
+  attachmentTools,
+  checklistTools
 ];
 
 // Build the tools array from all ExecutableTool maps
@@ -61,3 +63,4 @@ export { memberTools } from './members.js';
 export { searchTools } from './search.js';
 export { labelTools } from './labels.js';
 export { advancedTools } from './advanced.js';
+export { checklistTools } from './checklists.js';

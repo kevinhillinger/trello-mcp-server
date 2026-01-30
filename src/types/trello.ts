@@ -312,6 +312,32 @@ export interface UpdateLabelFieldRequest {
   value: string;
 }
 
+export interface CreateChecklistRequest {
+  idCard: string;
+  name?: string | undefined;
+  pos?: number | string | undefined;
+  idChecklistSource?: string | undefined;
+}
+
+export interface UpdateChecklistRequest {
+  name?: string | undefined;
+  pos?: number | string | undefined;
+}
+
+export interface UpdateChecklistFieldRequest {
+  field: 'name' | 'pos';
+  value: string;
+}
+
+export interface CreateCheckItemRequest {
+  name: string;
+  pos?: number | string | undefined;
+  checked?: boolean | undefined;
+  due?: string | undefined;
+  dueReminder?: number | null | undefined;
+  idMember?: string | undefined;
+}
+
 export interface TrelloError {
   message: string;
   error?: string;

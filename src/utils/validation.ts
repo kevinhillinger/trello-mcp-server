@@ -150,6 +150,79 @@ export const updateLabelFieldSchema = z.object({
   value: z.string().min(1, 'Field value is required')
 });
 
+// Checklist validation schemas
+export const createChecklistSchema = z.object({
+  idCard: trelloIdSchema,
+  name: z.string().min(1).max(16384, 'Checklist name too long').optional(),
+  pos: z.union([z.number().min(0), z.enum(['top', 'bottom'])]).optional(),
+  idChecklistSource: trelloIdOptionalSchema
+});
+
+export const getChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  cards: z.enum(['all', 'closed', 'none', 'open', 'visible']).optional(),
+  checkItems: z.enum(['all', 'none']).optional(),
+  checkItem_fields: z.string().optional(),
+  fields: z.string().optional()
+});
+
+export const updateChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  name: z.string().min(1).max(16384, 'Checklist name too long').optional(),
+  pos: z.union([z.number().min(0), z.enum(['top', 'bottom'])]).optional()
+});
+
+export const deleteChecklistSchema = z.object({
+  checklistId: trelloIdSchema
+});
+
+export const getChecklistFieldSchema = z.object({
+  checklistId: trelloIdSchema,
+  field: z.enum(['name', 'pos'])
+});
+
+export const updateChecklistFieldSchema = z.object({
+  checklistId: trelloIdSchema,
+  field: z.enum(['name', 'pos']),
+  value: z.string().min(1, 'Field value is required')
+});
+
+export const getBoardForChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  fields: z.string().optional()
+});
+
+export const getCardForChecklistSchema = z.object({
+  checklistId: trelloIdSchema
+});
+
+export const getCheckItemsOnChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  filter: z.enum(['all', 'none']).optional(),
+  fields: z.string().optional()
+});
+
+export const createCheckItemOnChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  name: z.string().min(1, 'Check item name is required').max(16384, 'Check item name too long'),
+  pos: z.union([z.number().min(0), z.enum(['top', 'bottom'])]).optional(),
+  checked: z.boolean().optional(),
+  due: z.string().optional(),
+  dueReminder: z.number().nullable().optional(),
+  idMember: trelloIdOptionalSchema
+});
+
+export const getCheckItemOnChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  checkItemId: trelloIdSchema,
+  fields: z.string().optional()
+});
+
+export const deleteCheckItemOnChecklistSchema = z.object({
+  checklistId: trelloIdSchema,
+  checkItemId: trelloIdSchema
+});
+
 export function validateListBoards(data: unknown) {
   return listBoardsSchema.parse(data);
 }
@@ -240,6 +313,54 @@ export function validateDeleteLabel(data: unknown) {
 
 export function validateUpdateLabelField(data: unknown) {
   return updateLabelFieldSchema.parse(data);
+}
+
+export function validateCreateChecklist(data: unknown) {
+  return createChecklistSchema.parse(data);
+}
+
+export function validateGetChecklist(data: unknown) {
+  return getChecklistSchema.parse(data);
+}
+
+export function validateUpdateChecklist(data: unknown) {
+  return updateChecklistSchema.parse(data);
+}
+
+export function validateDeleteChecklist(data: unknown) {
+  return deleteChecklistSchema.parse(data);
+}
+
+export function validateGetChecklistField(data: unknown) {
+  return getChecklistFieldSchema.parse(data);
+}
+
+export function validateUpdateChecklistField(data: unknown) {
+  return updateChecklistFieldSchema.parse(data);
+}
+
+export function validateGetBoardForChecklist(data: unknown) {
+  return getBoardForChecklistSchema.parse(data);
+}
+
+export function validateGetCardForChecklist(data: unknown) {
+  return getCardForChecklistSchema.parse(data);
+}
+
+export function validateGetCheckItemsOnChecklist(data: unknown) {
+  return getCheckItemsOnChecklistSchema.parse(data);
+}
+
+export function validateCreateCheckItemOnChecklist(data: unknown) {
+  return createCheckItemOnChecklistSchema.parse(data);
+}
+
+export function validateGetCheckItemOnChecklist(data: unknown) {
+  return getCheckItemOnChecklistSchema.parse(data);
+}
+
+export function validateDeleteCheckItemOnChecklist(data: unknown) {
+  return deleteCheckItemOnChecklistSchema.parse(data);
 }
 
 export function formatValidationError(error: z.ZodError): string {
