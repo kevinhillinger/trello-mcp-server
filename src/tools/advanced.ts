@@ -3,19 +3,6 @@ import { z } from 'zod';
 import { TrelloClient } from '../trello/client.js';
 import { formatValidationError } from '../utils/validation.js';
 
-const validateGetBoardCards = (args: unknown) => {
-  const schema = z.object({
-    apiKey: z.string().min(1, 'API key is required'),
-    token: z.string().min(1, 'Token is required'),
-    boardId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid board ID format'),
-    attachments: z.string().optional(),
-    members: z.string().optional(),
-    filter: z.string().optional()
-  });
-
-  return schema.parse(args);
-};
-
 const validateGetCardActions = (args: unknown) => {
   const schema = z.object({
     apiKey: z.string().min(1, 'API key is required'),
@@ -58,123 +45,6 @@ const validateGetBoardLabels = (args: unknown) => {
   });
 
   return schema.parse(args);
-};
-
-const getBoardCards: ExecutableTool = {
-  tool: {
-    name: 'getBoardCards',
-    description: 'Get all cards from a Trello board with optional filtering and detailed information like attachments and members.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        apiKey: {
-          type: 'string',
-          description: 'Trello API key (automatically provided by Claude.app from your stored credentials)'
-        },
-        token: {
-          type: 'string',
-          description: 'Trello API token (automatically provided by Claude.app from your stored credentials)'
-        },
-        boardId: {
-          type: 'string',
-          description: 'ID of the board to get cards from (you can get this from list_boards)',
-          pattern: '^[a-f0-9]{24}$'
-        },
-        attachments: {
-          type: 'string',
-          enum: ['cover', 'true', 'false'],
-          description: 'Include attachment information: "cover" for cover images, "true" for all attachments',
-          default: 'false'
-        },
-        members: {
-          type: 'string',
-          enum: ['true', 'false'],
-          description: 'Include member information for each card',
-          default: 'true'
-        },
-        filter: {
-          type: 'string',
-          enum: ['all', 'open', 'closed'],
-          description: 'Filter cards by status',
-          default: 'open'
-        }
-      },
-      required: ['apiKey', 'token', 'boardId']
-    }
-  },
-  callback: async function getBoardCardsCallback(args: unknown) {
-    try {
-      const { apiKey, token, boardId, attachments, members, filter } = validateGetBoardCards(args);
-      const client = new TrelloClient({ apiKey, token });
-
-      const response = await client.getBoardCards(boardId, {
-        ...(attachments && { attachments }),
-        ...(members && { members }),
-        ...(filter && { filter })
-      });
-      const cards = response.data;
-
-      const result = {
-        summary: `Found ${cards.length} card(s) in board`,
-        boardId,
-        cards: cards.map(card => ({
-          id: card.id,
-          name: card.name,
-          description: card.desc || 'No description',
-          url: card.shortUrl,
-          listId: card.idList,
-          position: card.pos,
-          due: card.due,
-          dueComplete: card.dueComplete,
-          closed: card.closed,
-          lastActivity: card.dateLastActivity,
-          labels: card.labels?.map(label => ({
-            id: label.id,
-            name: label.name,
-            color: label.color
-          })) || [],
-          members: card.members?.map(member => ({
-            id: member.id,
-            fullName: member.fullName,
-            username: member.username
-          })) || [],
-          attachments: card.attachments?.map((attachment: any) => ({
-            id: attachment.id,
-            name: attachment.name,
-            url: attachment.url,
-            mimeType: attachment.mimeType,
-            date: attachment.date
-          })) || []
-        })),
-        rateLimit: response.rateLimit
-      };
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2)
-          }
-        ]
-      };
-    } catch (error) {
-      const errorMessage = error instanceof z.ZodError
-        ? formatValidationError(error)
-        : error instanceof Error
-          ? error.message
-          : 'Unknown error occurred';
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: `Error getting board cards: ${errorMessage}`
-          }
-        ],
-        isError: true
-      };
-    }
-  }
 };
 
 const getCardActions: ExecutableTool = {
@@ -522,7 +392,6 @@ const getBoardLabels: ExecutableTool = {
 };
 
 export const advancedTools = new Map<string, ExecutableTool>();
-advancedTools.set(getBoardCards.tool.name, getBoardCards);
 advancedTools.set(getCardActions.tool.name, getCardActions);
 advancedTools.set(getCardChecklists.tool.name, getCardChecklists);
 advancedTools.set(getBoardMembers.tool.name, getBoardMembers);
