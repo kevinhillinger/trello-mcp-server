@@ -51,11 +51,8 @@ const createCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position in the list: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Position in the list: "top", "bottom", or a positive number'
         },
         due: {
           type: 'string',
@@ -182,11 +179,8 @@ const updateCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Change position in the list: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Change position in the list: "top", "bottom", or a positive number'
         }
       },
       required: ['cardId']
@@ -268,11 +262,8 @@ const moveCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position in the destination list: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Position in the destination list: "top", "bottom", or a positive number'
         }
       },
       required: ['cardId', 'idList']
@@ -560,7 +551,7 @@ const archiveCard: ExecutableTool = {
 const addAttachmentToCard: ExecutableTool = {
   definition: {
     name: 'addAttachmentToCard',
-    description: 'Add an attachment to a Trello card. Can attach either a URL or upload a file. Use this to link external resources, documents, or upload files directly.',
+    description: 'Add an attachment to a Trello card. Can attach either a URL or upload a file. Provide either "url" OR both "file" and "name" parameters.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -592,11 +583,7 @@ const addAttachmentToCard: ExecutableTool = {
           default: false
         }
       },
-      required: ['cardId'],
-      oneOf: [
-        { required: ['url'] },
-        { required: ['file', 'name'] }
-      ]
+      required: ['cardId']
     }
   },
   callback: async (args: unknown) => {
@@ -764,11 +751,8 @@ const createChecklistOnCard: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position of the checklist: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Position of the checklist: "top", "bottom", or a positive number'
         }
       },
       required: ['cardId']
@@ -853,11 +837,8 @@ const updateCheckItem: ExecutableTool = {
           description: 'Set the check item state: "complete" to check it, "incomplete" to uncheck'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position of the check item in the checklist'
+          type: ['number', 'string'],
+          description: 'Position of the check item in the checklist: "top", "bottom", or a positive number'
         }
       },
       required: ['cardId', 'checkItemId']

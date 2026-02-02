@@ -16,7 +16,7 @@ import { createTrelloClient } from './trello/client.js';
 export class TrelloServer {
   static serverInfo = {
     name: 'trello-mcp-server',
-    version: '1.2.0',
+    version: '1.3.0',
   };
 
   private mcpServer: McpServer;

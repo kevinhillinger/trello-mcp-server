@@ -144,11 +144,8 @@ const createList: ExecutableTool = {
           pattern: '^[a-f0-9]{24}$'
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position of the list in the board: "top", "bottom", or specific number',
+          type: ['number', 'string'],
+          description: 'Position of the list in the board: "top", "bottom", or a positive number',
           default: 'bottom'
         }
       },

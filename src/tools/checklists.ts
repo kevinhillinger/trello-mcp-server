@@ -35,11 +35,8 @@ const createChecklist: ExecutableTool = {
           maxLength: 16384
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position of the checklist: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Position of the checklist: "top", "bottom", or a positive number'
         },
         idChecklistSource: {
           type: 'string',
@@ -209,11 +206,8 @@ const updateChecklist: ExecutableTool = {
           maxLength: 16384
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'New position: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'New position: "top", "bottom", or a positive number'
         }
       },
       required: ['checklistId']
@@ -685,11 +679,8 @@ const createCheckItemOnChecklist: ExecutableTool = {
           maxLength: 16384
         },
         pos: {
-          oneOf: [
-            { type: 'number', minimum: 0 },
-            { type: 'string', enum: ['top', 'bottom'] }
-          ],
-          description: 'Position: "top", "bottom", or specific number'
+          type: ['number', 'string'],
+          description: 'Position: "top", "bottom", or a positive number'
         },
         checked: {
           type: 'boolean',
